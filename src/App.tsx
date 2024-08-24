@@ -36,63 +36,56 @@ const darkTheme = createTheme({
   },
 });
 
+type ReportCalculationParam = {
+  netWorth: string;
+  annualSavings: string;
+  savingsGrowthRate: string;
+  targetReturnRate: string;
+  annualInflationRate: string;
+  expectedRetirementAge: string;
+};
+
 function App() {
-  const [netWorth, setNetWorth] = React.useState("");
-  const [annualSavings, setAnnualSavings] = React.useState("");
-  const [savingsGrowthRate, setSavingsGrowthRate] = React.useState("");
-  const [targetReturnRate, setTargetReturnRate] = React.useState("");
-  const [annualInflationRate, setAnnualInflationRate] = React.useState("");
-  const [expectedRetirementAge, setExpectedRetirementAge] = React.useState<string>("");
+  const [reportCalculation, setReportCalculation] = React.useState<ReportCalculationParam>({
+    netWorth: "",
+    annualSavings: "",
+    savingsGrowthRate: "",
+    targetReturnRate: "",
+    annualInflationRate: "",
+    expectedRetirementAge: "",
+  });
 
   const handleExpectedRetirementAgeChange = (event: SelectChangeEvent<string>) => {
-    console.log("###########", event.target.value);
-    setExpectedRetirementAge(event.target.value);
+    setReportCalculation((prevState) => ({
+      ...prevState,
+      expectedRetirementAge: event.target.value,
+    }));
   };
+
   const formatNumber = (value: string) => {
     return value.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
-  const handleNetWorthChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    let value = event.target.value.replace(/,/g, "");
-    if (value === "-" || !isNaN(Number(value))) {
-      setNetWorth(formatNumber(value));
-    }
-  };
-  const handleAnnualSavingsChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    let value = event.target.value.replace(/,/g, "");
-    if (value === "-" || !isNaN(Number(value))) {
-      setAnnualSavings(formatNumber(value));
-    }
-  };
-  const handleSavingsGrowthRateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    let value = event.target.value.replace(/,/g, "");
-    if (value === "-" || !isNaN(Number(value))) {
-      setSavingsGrowthRate(formatNumber(value));
-    }
-  };
-  const handleTargetReturnRateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    let value = event.target.value.replace(/,/g, "");
-    if (value === "-" || !isNaN(Number(value))) {
-      setTargetReturnRate(formatNumber(value));
-    }
-  };
 
-  const handleAnnualInflationRateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    let value = event.target.value.replace(/,/g, "");
-    if (value === "-" || !isNaN(Number(value))) {
-      setAnnualInflationRate(formatNumber(value));
-    }
-  };
+  const handleChange =
+    (field: keyof ReportCalculationParam, removeDecimal = false) =>
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      let value = event.target.value.replace(/,/g, "");
+      if (removeDecimal) {
+        value = value.replace(/\./g, "");
+      }
+      if (value === "-" || !isNaN(Number(value))) {
+        setReportCalculation((prevState) => ({
+          ...prevState,
+          [field]: formatNumber(value),
+        }));
+      }
+    };
 
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
       <AppBar position="fixed">
-        <Toolbar
-          sx={{
-            minHeight: "50px !important",
-            height: "50px",
-          }}
-        >
+        <Toolbar sx={{ minHeight: "50px !important", height: "50px" }}>
           <PetsIcon sx={{ color: "#ffee77", marginBottom: "3px", marginRight: "5px" }} />
           <Typography variant="h6">복슬은퇴 계산기</Typography>
         </Toolbar>
@@ -104,8 +97,8 @@ function App() {
               label="순자산"
               type="text"
               sx={{ m: 1, flex: 1, width: "25ch", input: { textAlign: "right" } }}
-              value={netWorth}
-              onChange={handleNetWorthChange}
+              value={reportCalculation.netWorth}
+              onChange={handleChange("netWorth", true)}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="start" sx={{ marginLeft: "5px" }}>
@@ -121,8 +114,8 @@ function App() {
               label="한해 예상 저축금액"
               type="text"
               sx={{ m: 1, flex: 1, width: "25ch", input: { textAlign: "right" } }}
-              value={annualSavings}
-              onChange={handleAnnualSavingsChange}
+              value={reportCalculation.annualSavings}
+              onChange={handleChange("annualSavings")}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="start" sx={{ marginLeft: "5px" }}>
@@ -138,8 +131,8 @@ function App() {
               label="저축 증가률"
               type="text"
               sx={{ m: 1, flex: 1, width: "25ch", input: { textAlign: "right" } }}
-              value={savingsGrowthRate}
-              onChange={handleSavingsGrowthRateChange}
+              value={reportCalculation.savingsGrowthRate}
+              onChange={handleChange("savingsGrowthRate")}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="start" sx={{ marginLeft: "5px" }}>
@@ -155,8 +148,8 @@ function App() {
               label="목표 수익률"
               type="text"
               sx={{ m: 1, flex: 1, width: "25ch", input: { textAlign: "right" } }}
-              value={targetReturnRate}
-              onChange={handleTargetReturnRateChange}
+              value={reportCalculation.targetReturnRate}
+              onChange={handleChange("targetReturnRate")}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="start" sx={{ marginLeft: "5px" }}>
@@ -172,8 +165,8 @@ function App() {
               label="연평균 물가 상승률"
               type="text"
               sx={{ m: 1, flex: 1, width: "25ch", input: { textAlign: "right" } }}
-              value={annualInflationRate}
-              onChange={handleAnnualInflationRateChange}
+              value={reportCalculation.annualInflationRate}
+              onChange={handleChange("annualInflationRate")}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="start" sx={{ marginLeft: "5px" }}>
@@ -190,7 +183,7 @@ function App() {
               <Select
                 labelId="demo-simple-select-helper-label"
                 id="demo-simple-select-helper"
-                value={expectedRetirementAge}
+                value={reportCalculation.expectedRetirementAge}
                 onChange={handleExpectedRetirementAgeChange}
                 variant="standard"
               >
