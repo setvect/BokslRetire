@@ -8,16 +8,16 @@ import {
   CssBaseline,
   createTheme,
   ThemeProvider,
-  TextField,
-  InputAdornment,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  SelectChangeEvent,
-  Button,
+  TableContainer,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
 } from "@mui/material";
+import Paper from "@mui/material/Paper";
 import PetsIcon from "@mui/icons-material/Pets";
+import ConditionForm, { ReportCondition } from "./components/ConditionForm";
 
 const darkTheme = createTheme({
   palette: {
@@ -36,50 +36,28 @@ const darkTheme = createTheme({
   },
 });
 
-type ReportCalculationParam = {
-  netWorth: string;
-  annualSavings: string;
-  savingsGrowthRate: string;
-  targetReturnRate: string;
-  annualInflationRate: string;
-  expectedRetirementAge: string;
-};
-
 function App() {
-  const [reportCalculation, setReportCalculation] = React.useState<ReportCalculationParam>({
+  const [condition, setCondition] = React.useState<ReportCondition>({
     netWorth: "",
     annualSavings: "",
     savingsGrowthRate: "",
     targetReturnRate: "",
     annualInflationRate: "",
     expectedRetirementAge: "",
+    retireSpend: "",
   });
 
-  const handleExpectedRetirementAgeChange = (event: SelectChangeEvent<string>) => {
-    setReportCalculation((prevState) => ({
-      ...prevState,
-      expectedRetirementAge: event.target.value,
-    }));
-  };
+  function createData(name: string, calories: number, fat: number, carbs: number, protein: number) {
+    return { name, calories, fat, carbs, protein };
+  }
 
-  const formatNumber = (value: string) => {
-    return value.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  };
-
-  const handleChange =
-    (field: keyof ReportCalculationParam, removeDecimal = false) =>
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      let value = event.target.value.replace(/,/g, "");
-      if (removeDecimal) {
-        value = value.replace(/\./g, "");
-      }
-      if (value === "-" || !isNaN(Number(value))) {
-        setReportCalculation((prevState) => ({
-          ...prevState,
-          [field]: formatNumber(value),
-        }));
-      }
-    };
+  const rows = [
+    createData("Frozen yoghurt", 159, 6.0, 24, 4.0),
+    createData("Ice cream sandwich", 237, 9.0, 37, 4.3),
+    createData("Eclair", 262, 16.0, 24, 6.0),
+    createData("Cupcake", 305, 3.7, 67, 4.3),
+    createData("Gingerbread", 356, 16.0, 49, 3.9),
+  ];
 
   return (
     <ThemeProvider theme={darkTheme}>
@@ -92,114 +70,37 @@ function App() {
       </AppBar>
       <Box sx={{ mt: "55px" }}>
         <Container maxWidth={false}>
-          <div style={{ display: "flex", alignItems: "center", width: "100%", gap: "16px" }}>
-            <TextField
-              label="순자산"
-              type="text"
-              sx={{ m: 1, flex: 1, width: "25ch", input: { textAlign: "right" } }}
-              value={reportCalculation.netWorth}
-              onChange={handleChange("netWorth", true)}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="start" sx={{ marginLeft: "5px" }}>
-                    만원
-                  </InputAdornment>
-                ),
-                inputProps: { maxLength: 10 },
-                style: { textAlign: "right" },
-              }}
-              variant="standard"
-            />
-            <TextField
-              label="한해 예상 저축금액"
-              type="text"
-              sx={{ m: 1, flex: 1, width: "25ch", input: { textAlign: "right" } }}
-              value={reportCalculation.annualSavings}
-              onChange={handleChange("annualSavings")}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="start" sx={{ marginLeft: "5px" }}>
-                    만원
-                  </InputAdornment>
-                ),
-                inputProps: { maxLength: 10 },
-                style: { textAlign: "right" },
-              }}
-              variant="standard"
-            />
-            <TextField
-              label="저축 증가률"
-              type="text"
-              sx={{ m: 1, flex: 1, width: "25ch", input: { textAlign: "right" } }}
-              value={reportCalculation.savingsGrowthRate}
-              onChange={handleChange("savingsGrowthRate")}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="start" sx={{ marginLeft: "5px" }}>
-                    %
-                  </InputAdornment>
-                ),
-                inputProps: { maxLength: 5 },
-                style: { textAlign: "right" },
-              }}
-              variant="standard"
-            />
-            <TextField
-              label="목표 수익률"
-              type="text"
-              sx={{ m: 1, flex: 1, width: "25ch", input: { textAlign: "right" } }}
-              value={reportCalculation.targetReturnRate}
-              onChange={handleChange("targetReturnRate")}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="start" sx={{ marginLeft: "5px" }}>
-                    %
-                  </InputAdornment>
-                ),
-                inputProps: { maxLength: 5 },
-                style: { textAlign: "right" },
-              }}
-              variant="standard"
-            />
-            <TextField
-              label="연평균 물가 상승률"
-              type="text"
-              sx={{ m: 1, flex: 1, width: "25ch", input: { textAlign: "right" } }}
-              value={reportCalculation.annualInflationRate}
-              onChange={handleChange("annualInflationRate")}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="start" sx={{ marginLeft: "5px" }}>
-                    %
-                  </InputAdornment>
-                ),
-                inputProps: { maxLength: 5 },
-                style: { textAlign: "right" },
-              }}
-              variant="standard"
-            />
-            <FormControl sx={{ m: 1, flex: 1, minWidth: 250 }}>
-              <InputLabel id="demo-simple-select-helper-label">예상(희망) 은퇴 시기</InputLabel>
-              <Select
-                labelId="demo-simple-select-helper-label"
-                id="demo-simple-select-helper"
-                value={reportCalculation.expectedRetirementAge}
-                onChange={handleExpectedRetirementAgeChange}
-                variant="standard"
-              >
-                <MenuItem value="">
-                  <em>-- 선택해주세요 --</em>
-                </MenuItem>
-                {[...Array(51)].map((_, index) => (
-                  <MenuItem key={index} value={index}>
-                    {index === 0 ? "지금당장" : `${index}년후`}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <Button variant="contained" color="success" sx={{ m: 2, flex: 1 }}>
-              결과확인
-            </Button>
+          <ConditionForm condition={condition} setCondition={setCondition} />
+          <div>
+            <Typography variant="h6" component="h2">
+              결과
+            </Typography>
+            <TableContainer component={Paper}>
+              <Table sx={{ minWidth: 650 }} aria-label="simple table">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Dessert (100g serving)</TableCell>
+                    <TableCell align="right">Calories</TableCell>
+                    <TableCell align="right">Fat&nbsp;(g)</TableCell>
+                    <TableCell align="right">Carbs&nbsp;(g)</TableCell>
+                    <TableCell align="right">Protein&nbsp;(g)</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {rows.map((row) => (
+                    <TableRow key={row.name} sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
+                      <TableCell component="th" scope="row">
+                        {row.name}
+                      </TableCell>
+                      <TableCell align="right">{row.calories}</TableCell>
+                      <TableCell align="right">{row.fat}</TableCell>
+                      <TableCell align="right">{row.carbs}</TableCell>
+                      <TableCell align="right">{row.protein}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
           </div>
         </Container>
       </Box>
