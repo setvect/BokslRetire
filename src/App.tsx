@@ -19,6 +19,7 @@ import Paper from "@mui/material/Paper";
 import PetsIcon from "@mui/icons-material/Pets";
 import ConditionForm, { ReportCondition } from "./components/ConditionForm";
 import _ from "lodash";
+import "./App.css";
 
 const darkTheme = createTheme({
   palette: {
@@ -39,6 +40,7 @@ const darkTheme = createTheme({
 
 type RetirementCalculatorYear = {
   year: number;
+  startAmount: number;
   savingsAmount: number;
   cumulativeInflationRate: number;
   investmentIncome: number;
@@ -61,6 +63,7 @@ function App() {
 
   const rows: RetirementCalculatorYear[] = _.range(1, 101).map((idx) => ({
     year: 2023 + idx,
+    startAmount: 9,
     savingsAmount: 10,
     cumulativeInflationRate: 11,
     investmentIncome: 12,
@@ -86,40 +89,52 @@ function App() {
             <Typography variant="h6" component="h2">
               결과
             </Typography>
-            <TableContainer component={Paper} sx={{ maxHeight: 440 }}>
+            <TableContainer component={Paper} sx={{ maxHeight: "calc(100vh - 170px)" }} className="custom-scrollbar">
               <Table
+                stickyHeader
                 sx={{
+                  tableLayout: "fixed",
                   "& .MuiTableCell-root": {
                     border: "1px solid #555",
                   },
                   "& .MuiTableHead-root .MuiTableCell-root": {
                     fontWeight: "bold",
-                    position: "sticky",
-                    top: 0,
                     backgroundColor: "background.paper",
                     zIndex: 1,
                   },
-                  tableLayout: "fixed",
                 }}
               >
                 <TableHead>
                   <TableRow>
                     <TableCell align="center">년도</TableCell>
+                    <TableCell align="center">시작금액</TableCell>
                     <TableCell align="center">저축금액</TableCell>
                     <TableCell align="center">투자소득</TableCell>
                     <TableCell align="center">누적 자산</TableCell>
                     <TableCell align="center">누적 물가 상승률</TableCell>
                     <TableCell align="center">생활비</TableCell>
                     <TableCell align="center">남은 자산</TableCell>
-                    <TableCell align="center">남은 자산(현재가치)</TableCell>
+                    <TableCell align="center">현재가치 환산</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {rows.map((row) => (
-                    <TableRow key={row.year}>
+                  {rows.map((row, index) => (
+                    <TableRow
+                      key={index}
+                      sx={
+                        (index + 1) % 5 === 0
+                          ? {
+                              "& .MuiTableCell-root": {
+                                borderBottom: "1px solid #fff",
+                              },
+                            }
+                          : {}
+                      }
+                    >
                       <TableCell component="th" scope="row">
                         {row.year}년 (올해)
                       </TableCell>
+                      <TableCell align="right">{row.startAmount}만원</TableCell>
                       <TableCell align="right">{row.savingsAmount}만원</TableCell>
                       <TableCell align="right">{row.investmentIncome}만원</TableCell>
                       <TableCell align="right">{row.totalAssets}만원</TableCell>
