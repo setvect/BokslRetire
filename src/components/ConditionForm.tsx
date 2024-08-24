@@ -72,7 +72,7 @@ function ConditionForm({ condition, setCondition }: ConditionFormProps) {
         variant="standard"
       />
       <TextField
-        label="한해 예상 저축금액"
+        label="한해 저축금액"
         type="text"
         sx={{ m: 1, flex: 1, width: "25ch", input: { textAlign: "right" } }}
         value={condition.annualSavings}

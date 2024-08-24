@@ -18,6 +18,7 @@ import {
 import Paper from "@mui/material/Paper";
 import PetsIcon from "@mui/icons-material/Pets";
 import ConditionForm, { ReportCondition } from "./components/ConditionForm";
+import _ from "lodash";
 
 const darkTheme = createTheme({
   palette: {
@@ -36,6 +37,17 @@ const darkTheme = createTheme({
   },
 });
 
+type RetirementCalculatorYear = {
+  year: number;
+  savingsAmount: number;
+  cumulativeInflationRate: number;
+  investmentIncome: number;
+  totalAssets: number;
+  livingExpenses: number;
+  remainingAssets: number;
+  remainingAssetsPresentValue: number;
+};
+
 function App() {
   const [condition, setCondition] = React.useState<ReportCondition>({
     netWorth: "",
@@ -47,17 +59,16 @@ function App() {
     retireSpend: "",
   });
 
-  function createData(name: string, calories: number, fat: number, carbs: number, protein: number) {
-    return { name, calories, fat, carbs, protein };
-  }
-
-  const rows = [
-    createData("Frozen yoghurt", 159, 6.0, 24, 4.0),
-    createData("Ice cream sandwich", 237, 9.0, 37, 4.3),
-    createData("Eclair", 262, 16.0, 24, 6.0),
-    createData("Cupcake", 305, 3.7, 67, 4.3),
-    createData("Gingerbread", 356, 16.0, 49, 3.9),
-  ];
+  const rows: RetirementCalculatorYear[] = _.range(1, 101).map((idx) => ({
+    year: 2023 + idx,
+    savingsAmount: 10,
+    cumulativeInflationRate: 11,
+    investmentIncome: 12,
+    totalAssets: 13,
+    livingExpenses: 14,
+    remainingAssets: 15,
+    remainingAssetsPresentValue: 16,
+  }));
 
   return (
     <ThemeProvider theme={darkTheme}>
@@ -75,27 +86,47 @@ function App() {
             <Typography variant="h6" component="h2">
               결과
             </Typography>
-            <TableContainer component={Paper}>
-              <Table sx={{ minWidth: 650 }} aria-label="simple table">
+            <TableContainer component={Paper} sx={{ maxHeight: 440 }}>
+              <Table
+                sx={{
+                  "& .MuiTableCell-root": {
+                    border: "1px solid #555",
+                  },
+                  "& .MuiTableHead-root .MuiTableCell-root": {
+                    fontWeight: "bold",
+                    position: "sticky",
+                    top: 0,
+                    backgroundColor: "background.paper",
+                    zIndex: 1,
+                  },
+                  tableLayout: "fixed",
+                }}
+              >
                 <TableHead>
                   <TableRow>
-                    <TableCell>Dessert (100g serving)</TableCell>
-                    <TableCell align="right">Calories</TableCell>
-                    <TableCell align="right">Fat&nbsp;(g)</TableCell>
-                    <TableCell align="right">Carbs&nbsp;(g)</TableCell>
-                    <TableCell align="right">Protein&nbsp;(g)</TableCell>
+                    <TableCell align="center">년도</TableCell>
+                    <TableCell align="center">저축금액</TableCell>
+                    <TableCell align="center">투자소득</TableCell>
+                    <TableCell align="center">누적 자산</TableCell>
+                    <TableCell align="center">누적 물가 상승률</TableCell>
+                    <TableCell align="center">생활비</TableCell>
+                    <TableCell align="center">남은 자산</TableCell>
+                    <TableCell align="center">남은 자산(현재가치)</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {rows.map((row) => (
-                    <TableRow key={row.name} sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
+                    <TableRow key={row.year}>
                       <TableCell component="th" scope="row">
-                        {row.name}
+                        {row.year}년 (올해)
                       </TableCell>
-                      <TableCell align="right">{row.calories}</TableCell>
-                      <TableCell align="right">{row.fat}</TableCell>
-                      <TableCell align="right">{row.carbs}</TableCell>
-                      <TableCell align="right">{row.protein}</TableCell>
+                      <TableCell align="right">{row.savingsAmount}만원</TableCell>
+                      <TableCell align="right">{row.investmentIncome}만원</TableCell>
+                      <TableCell align="right">{row.totalAssets}만원</TableCell>
+                      <TableCell align="right">{row.cumulativeInflationRate}%</TableCell>
+                      <TableCell align="right">{row.livingExpenses}만원</TableCell>
+                      <TableCell align="right">{row.remainingAssets}만원</TableCell>
+                      <TableCell align="right">{row.remainingAssetsPresentValue}만원</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
