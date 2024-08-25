@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, forwardRef, useImperativeHandle } from "react";
 import {
   TextField,
   InputAdornment,
@@ -11,7 +11,7 @@ import {
   FormHelperText,
 } from "@mui/material";
 
-export type ReportCondition = {
+export type ConditionFormValue = {
   netWorth: string;
   annualSavings: string;
   savingsGrowthRate: string;
@@ -21,14 +21,36 @@ export type ReportCondition = {
   retireSpend: string;
 };
 
-type ConditionFormProps = {
-  condition: ReportCondition;
-  setCondition: React.Dispatch<React.SetStateAction<ReportCondition>>;
-  onSubmit: () => void;
+export type ReportCondtion = {
+  netWorth: number;
+  annualSavings: number;
+  savingsGrowthRate: number;
+  targetReturnRate: number;
+  annualInflationRate: number;
+  expectedRetirementAge: number;
+  retireSpend: number;
 };
 
-function ConditionForm({ condition, setCondition, onSubmit }: ConditionFormProps) {
-  const [errors, setErrors] = useState<Partial<Record<keyof ReportCondition, string>>>({});
+type ConditionFormProps = {
+  onSubmit: (reportCondition: ReportCondtion) => void;
+};
+
+export interface ConditionFormHandle {
+  initFomrmValue: (init: ReportCondtion) => void;
+}
+
+const ConditionForm = forwardRef<ConditionFormHandle, ConditionFormProps>((props, ref) => {
+  const [errors, setErrors] = useState<Partial<Record<keyof ConditionFormValue, string>>>({});
+
+  const [condition, setCondition] = React.useState<ConditionFormValue>({
+    netWorth: "",
+    annualSavings: "",
+    savingsGrowthRate: "",
+    targetReturnRate: "",
+    annualInflationRate: "",
+    expectedRetirementAge: "",
+    retireSpend: "",
+  });
 
   const handleExpectedRetirementAgeChange = (event: SelectChangeEvent<string>) => {
     setCondition((prevState) => ({
@@ -42,8 +64,22 @@ function ConditionForm({ condition, setCondition, onSubmit }: ConditionFormProps
     return value.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
 
+  useImperativeHandle(ref, () => ({
+    initFomrmValue(init: ReportCondtion) {
+      setCondition({
+        netWorth: formatNumber(init.netWorth.toString()),
+        annualSavings: formatNumber(init.annualSavings.toString()),
+        savingsGrowthRate: formatNumber(init.savingsGrowthRate.toString()),
+        targetReturnRate: formatNumber(init.targetReturnRate.toString()),
+        annualInflationRate: formatNumber(init.annualInflationRate.toString()),
+        expectedRetirementAge: formatNumber(init.expectedRetirementAge.toString()),
+        retireSpend: formatNumber(init.retireSpend.toString()),
+      });
+    },
+  }));
+
   const handleChange =
-    (field: keyof ReportCondition, removeDecimal = false) =>
+    (field: keyof ConditionFormValue, removeDecimal = false) =>
     (event: React.ChangeEvent<HTMLInputElement>) => {
       let value = event.target.value.replace(/,/g, "");
       if (removeDecimal) {
@@ -60,7 +96,7 @@ function ConditionForm({ condition, setCondition, onSubmit }: ConditionFormProps
 
   const validateForm = () => {
     let valid = true;
-    const newErrors: Partial<Record<keyof ReportCondition, string>> = {};
+    const newErrors: Partial<Record<keyof ConditionFormValue, string>> = {};
 
     if (!condition.netWorth) {
       newErrors.netWorth = "순자산을 입력하세요.";
@@ -94,9 +130,21 @@ function ConditionForm({ condition, setCondition, onSubmit }: ConditionFormProps
     return valid;
   };
 
+  const convertToReportCondition = (condition: ConditionFormValue): ReportCondtion => {
+    return {
+      netWorth: parseFloat(condition.netWorth.replace(/,/g, "")),
+      annualSavings: parseFloat(condition.annualSavings.replace(/,/g, "")),
+      savingsGrowthRate: parseFloat(condition.savingsGrowthRate.replace(/,/g, "")),
+      targetReturnRate: parseFloat(condition.targetReturnRate.replace(/,/g, "")),
+      annualInflationRate: parseFloat(condition.annualInflationRate.replace(/,/g, "")),
+      expectedRetirementAge: parseInt(condition.expectedRetirementAge, 10),
+      retireSpend: parseFloat(condition.retireSpend.replace(/,/g, "")),
+    };
+  };
   const handleFormSubmit = () => {
     if (validateForm()) {
-      onSubmit();
+      const reportCondition = convertToReportCondition(condition);
+      props.onSubmit(reportCondition);
     }
   };
 
@@ -247,6 +295,6 @@ function ConditionForm({ condition, setCondition, onSubmit }: ConditionFormProps
       </Button>
     </div>
   );
-}
+});
 
 export default ConditionForm;
