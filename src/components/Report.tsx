@@ -28,7 +28,7 @@ function Report() {
   }));
 
   const getBackgroundColor = (index: number) => {
-    const group = Math.floor(index / 5);
+    const group = Math.floor((index - 1) / 5);
     switch (group % 2) {
       case 0:
         return "#333";
@@ -42,7 +42,7 @@ function Report() {
       <Typography variant="h6" component="h2">
         결과
       </Typography>
-      <TableContainer component={Paper} sx={{ maxHeight: "calc(100vh - 170px)" }} className="custom-scrollbar">
+      <TableContainer component={Paper} sx={{ maxHeight: "calc(100vh - 180px)" }} className="custom-scrollbar">
         <Table
           stickyHeader
           sx={{

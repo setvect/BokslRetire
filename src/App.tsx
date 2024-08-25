@@ -33,6 +33,11 @@ function App() {
     retireSpend: "",
   });
 
+  const handleSubmit = () => {
+    console.log("Form submitted with condition:", condition);
+    console.log("@@@@@@@@@@@@", condition);
+  };
+
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
@@ -44,7 +49,7 @@ function App() {
       </AppBar>
       <Box sx={{ mt: "55px" }}>
         <Container maxWidth={false}>
-          <ConditionForm condition={condition} setCondition={setCondition} />
+          <ConditionForm condition={condition} setCondition={setCondition} onSubmit={handleSubmit} />
           <Report />
         </Container>
       </Box>
