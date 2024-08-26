@@ -22,13 +22,13 @@ export type ConditionFormValue = {
 };
 
 export type ReportCondtion = {
-  netWorth: number;
-  annualSavings: number;
-  savingsGrowthRate: number;
-  targetReturnRate: number;
-  annualInflationRate: number;
-  expectedRetirementAge: number;
-  retireSpend: number;
+  netWorth: number; // 순자산
+  annualSavings: number; // 한해 저축가능금액
+  savingsGrowthRate: number; // 저축 증가률
+  targetReturnRate: number; // 목표 수익률
+  annualInflationRate: number; // 연평균 물가상승률
+  expectedRetirementAge: number; // 예상 은퇴시기
+  retireSpend: number; // 은퇴후 월 생활비(현재가치)
 };
 
 type ConditionFormProps = {

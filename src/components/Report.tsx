@@ -6,15 +6,15 @@ import { useEffect, useState } from "react";
 import { formatNumber } from "../util/Util";
 
 type RetirementCalculatorYear = {
-  year: number;
-  startAmount: number;
-  savingsAmount: number;
-  cumulativeInflationRate: number;
-  investmentIncome: number;
-  totalAssets: number;
-  livingExpenses: number;
-  remainingAssets: number;
-  remainingAssetsPresentValue: number;
+  year: number; // 해당 연도
+  startAmount: number; // 시작금액
+  investmentIncome: number; // 투자소득
+  savingsAmount: number; // 저축금액
+  totalAssets: number; // 누적 자산
+  cumulativeInflationRate: number; // 누적 물가상승률
+  livingExpenses: number; // 은퇴후 생활비
+  remainingAssets: number; // 남은자산
+  remainingAssetsPresentValue: number; // 현재가치로 평가한 남은자산
 };
 
 interface ReportProps {
@@ -42,20 +42,60 @@ function Report({ condition }: ReportProps) {
 
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear();
+    const yearData: RetirementCalculatorYear[] = [];
 
-    const rows: RetirementCalculatorYear[] = _.range(0, 101).map((idx) => ({
-      year: currentYear + idx,
-      startAmount: condition.netWorth,
-      savingsAmount: 10,
-      cumulativeInflationRate: 3.5576,
-      investmentIncome: 12,
-      totalAssets: 13,
-      livingExpenses: 14,
-      remainingAssets: 15,
-      remainingAssetsPresentValue: 16,
-    }));
+    const startAmount = condition.netWorth;
+    const investmentIncome = (startAmount * condition.targetReturnRate) / 100;
+    const savingsAmount = condition.expectedRetirementAge === 0 ? 0 : condition.annualSavings;
+    const totalAssets = condition.netWorth + investmentIncome + condition.annualSavings;
+    const cumulativeInflationRate = 0;
+    const livingExpenses = condition.expectedRetirementAge === 0 ? condition.retireSpend * 12 : 0;
+    const remainingAssets = totalAssets - livingExpenses;
+    const remainingAssetsPresentValue = remainingAssets / Math.pow(1 + cumulativeInflationRate / 100, 100);
 
-    setRetirementCalculatorYearList(rows);
+    yearData.push({
+      year: currentYear,
+      startAmount,
+      investmentIncome,
+      savingsAmount,
+      totalAssets,
+      cumulativeInflationRate,
+      livingExpenses,
+      remainingAssets,
+      remainingAssetsPresentValue,
+    });
+
+    for (let yearIdx = 1; yearIdx <= 100; yearIdx++) {
+      const beforeValue = yearData[yearIdx - 1];
+
+      const startAmount = beforeValue.remainingAssets;
+      const investmentIncome = (startAmount * condition.targetReturnRate) / 100;
+      const savingsAmount =
+        condition.expectedRetirementAge <= yearIdx
+          ? 0
+          : condition.annualSavings * Math.pow(1 + condition.savingsGrowthRate / 100, yearIdx);
+      const totalAssets = startAmount + investmentIncome + savingsAmount;
+      const cumulativeInflationRate = ((1 + condition.annualInflationRate / 100) ** yearIdx - 1) * 100;
+      const livingExpenses =
+        condition.expectedRetirementAge <= yearIdx
+          ? condition.retireSpend * (1 + cumulativeInflationRate / 100) * 12
+          : 0;
+      const remainingAssets = totalAssets - livingExpenses;
+      const remainingAssetsPresentValue = remainingAssets / (1 + cumulativeInflationRate / 100);
+
+      yearData.push({
+        year: currentYear + yearIdx,
+        startAmount,
+        investmentIncome,
+        savingsAmount,
+        totalAssets,
+        cumulativeInflationRate,
+        livingExpenses,
+        remainingAssets,
+        remainingAssetsPresentValue,
+      });
+    }
+    setRetirementCalculatorYearList(yearData);
   }, [condition]);
 
   const formatCondition = (condition: ReportCondtion): string => {
@@ -96,11 +136,11 @@ function Report({ condition }: ReportProps) {
             <TableRow>
               <TableCell align="center">년도</TableCell>
               <TableCell align="center">시작금액</TableCell>
-              <TableCell align="center">저축금액</TableCell>
               <TableCell align="center">투자소득</TableCell>
+              <TableCell align="center">저축금액</TableCell>
               <TableCell align="center">누적 자산</TableCell>
               <TableCell align="center">누적 물가 상승률</TableCell>
-              <TableCell align="center">생활비</TableCell>
+              <TableCell align="center">한해 생활비</TableCell>
               <TableCell align="center">남은 자산</TableCell>
               <TableCell align="center">현재가치 환산</TableCell>
             </TableRow>
@@ -112,11 +152,15 @@ function Report({ condition }: ReportProps) {
                   {row.year}년 ({index === 0 ? "올해" : `+${index}년`})
                 </TableCell>
                 <TableCell align="right">{formatNumber(row.startAmount, "0,0")}만원</TableCell>
-                <TableCell align="right">{formatNumber(row.savingsAmount, "0,0")}만원</TableCell>
                 <TableCell align="right">{formatNumber(row.investmentIncome, "0,0")}만원</TableCell>
+                <TableCell align="right">
+                  {row.savingsAmount === 0 ? "-" : formatNumber(row.savingsAmount, "0,0") + "만원"}
+                </TableCell>
                 <TableCell align="right">{formatNumber(row.totalAssets, "0,0")}만원</TableCell>
                 <TableCell align="right">{formatNumber(row.cumulativeInflationRate, "0.00")}%</TableCell>
-                <TableCell align="right">{formatNumber(row.livingExpenses, "0,0")}만원</TableCell>
+                <TableCell align="right">
+                  {row.livingExpenses === 0 ? "-" : formatNumber(row.livingExpenses, "0,0") + "만원"}
+                </TableCell>
                 <TableCell align="right">{formatNumber(row.remainingAssets, "0,0")}만원</TableCell>
                 <TableCell align="right">{formatNumber(row.remainingAssetsPresentValue, "0,0")}만원</TableCell>
               </TableRow>
