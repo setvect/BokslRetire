@@ -1,6 +1,9 @@
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material";
 import Paper from "@mui/material/Paper";
 import _ from "lodash";
+import { ReportCondtion } from "./ConditionForm";
+import { useEffect, useState } from "react";
+import { formatNumber } from "../util/Util";
 
 type RetirementCalculatorYear = {
   year: number;
@@ -14,18 +17,12 @@ type RetirementCalculatorYear = {
   remainingAssetsPresentValue: number;
 };
 
-function Report() {
-  const rows: RetirementCalculatorYear[] = _.range(1, 101).map((idx) => ({
-    year: 2023 + idx,
-    startAmount: 9,
-    savingsAmount: 10,
-    cumulativeInflationRate: 11,
-    investmentIncome: 12,
-    totalAssets: 13,
-    livingExpenses: 14,
-    remainingAssets: 15,
-    remainingAssetsPresentValue: 16,
-  }));
+interface ReportProps {
+  condition: ReportCondtion | null;
+}
+
+function Report({ condition }: ReportProps) {
+  const [retirementCalculatorYearList, setRetirementCalculatorYearList] = useState<RetirementCalculatorYear[]>([]);
 
   const getBackgroundColor = (index: number) => {
     const group = Math.floor((index - 1) / 5);
@@ -36,6 +33,29 @@ function Report() {
         return "inherit";
     }
   };
+
+  useEffect(() => {
+    if (!condition) {
+      return;
+    }
+
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+
+    const rows: RetirementCalculatorYear[] = _.range(0, 101).map((idx) => ({
+      year: currentYear + idx,
+      startAmount: condition.netWorth,
+      savingsAmount: 10,
+      cumulativeInflationRate: 3.5576,
+      investmentIncome: 12,
+      totalAssets: 13,
+      livingExpenses: 14,
+      remainingAssets: 15,
+      remainingAssetsPresentValue: 16,
+    }));
+
+    setRetirementCalculatorYearList(rows);
+  }, [condition]);
 
   return (
     <div>
@@ -71,19 +91,19 @@ function Report() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.map((row, index) => (
+            {retirementCalculatorYearList.map((row, index) => (
               <TableRow key={index} sx={{ backgroundColor: getBackgroundColor(index) }}>
                 <TableCell component="th" scope="row">
-                  {row.year}년 (올해)
+                  {row.year}년 ({index === 0 ? "올해" : `+${index}년`})
                 </TableCell>
-                <TableCell align="right">{row.startAmount}만원</TableCell>
-                <TableCell align="right">{row.savingsAmount}만원</TableCell>
-                <TableCell align="right">{row.investmentIncome}만원</TableCell>
-                <TableCell align="right">{row.totalAssets}만원</TableCell>
-                <TableCell align="right">{row.cumulativeInflationRate}%</TableCell>
-                <TableCell align="right">{row.livingExpenses}만원</TableCell>
-                <TableCell align="right">{row.remainingAssets}만원</TableCell>
-                <TableCell align="right">{row.remainingAssetsPresentValue}만원</TableCell>
+                <TableCell align="right">{formatNumber(row.startAmount, "0,0")}만원</TableCell>
+                <TableCell align="right">{formatNumber(row.savingsAmount, "0,0")}만원</TableCell>
+                <TableCell align="right">{formatNumber(row.investmentIncome, "0,0")}만원</TableCell>
+                <TableCell align="right">{formatNumber(row.totalAssets, "0,0")}만원</TableCell>
+                <TableCell align="right">{formatNumber(row.cumulativeInflationRate, "0.00")}%</TableCell>
+                <TableCell align="right">{formatNumber(row.livingExpenses, "0,0")}만원</TableCell>
+                <TableCell align="right">{formatNumber(row.remainingAssets, "0,0")}만원</TableCell>
+                <TableCell align="right">{formatNumber(row.remainingAssetsPresentValue, "0,0")}만원</TableCell>
               </TableRow>
             ))}
           </TableBody>

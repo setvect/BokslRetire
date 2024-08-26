@@ -10,7 +10,7 @@ import {
   Toolbar,
   Typography,
 } from "@mui/material";
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import "./App.css";
 import ConditionForm, { ConditionFormHandle, ConditionFormValue, ReportCondtion } from "./components/ConditionForm";
 import Report from "./components/Report";
@@ -33,8 +33,10 @@ const darkTheme = createTheme({
 });
 
 function App() {
-  const handleSubmit = (reportCondition: ReportCondtion) => {
-    console.log("@@@@@@@@@@@@", reportCondition);
+  const [condition, setCondition] = useState<ReportCondtion | null>(null);
+
+  const conditionSubmit = (reportCondition: ReportCondtion) => {
+    setCondition(reportCondition);
   };
 
   const conditionFormRef = useRef<ConditionFormHandle>(null);
@@ -63,8 +65,8 @@ function App() {
       </AppBar>
       <Box sx={{ mt: "55px" }}>
         <Container maxWidth={false}>
-          <ConditionForm ref={conditionFormRef} onSubmit={handleSubmit} />
-          <Report />
+          <ConditionForm ref={conditionFormRef} onSubmit={conditionSubmit} />
+          <Report condition={condition} />
         </Container>
       </Box>
     </ThemeProvider>
