@@ -34,6 +34,7 @@ function Report({ condition }: ReportProps) {
     }
   };
 
+  // 조건 변경에 따른 리포트 계산
   useEffect(() => {
     if (!condition) {
       return;
@@ -57,11 +58,25 @@ function Report({ condition }: ReportProps) {
     setRetirementCalculatorYearList(rows);
   }, [condition]);
 
+  const formatCondition = (condition: ReportCondtion): string => {
+    return `
+      <strong>결과</strong> - 
+      순자산: <span class="condition-value">${formatNumber(condition.netWorth, "0,0")}만원</span>, 
+      저축금액: <span class="condition-value">$${formatNumber(condition.annualSavings, "0,0")}만원</span>, 
+      저축 증가율: <span class="condition-value">$${condition.savingsGrowthRate}%</span>, 
+      목표 수익률: <span class="condition-value">$${condition.targetReturnRate}%</span>, 
+      물가 상승률: <span class="condition-value">$${condition.annualInflationRate}%</span>, 
+      은퇴 시기: <span class="condition-value">$${condition.expectedRetirementAge}년후</span>, 
+      은퇴후 월 생활비: <span class="condition-value">$${formatNumber(condition.retireSpend, "0,0")}만원</span>
+    `;
+  };
+
   return (
     <div>
-      <Typography variant="h6" component="h2">
-        결과
+      <Typography variant="body1" sx={{ margin: "8px 0" }}>
+        {condition && <span dangerouslySetInnerHTML={{ __html: formatCondition(condition) }} />}
       </Typography>
+
       <TableContainer component={Paper} sx={{ maxHeight: "calc(100vh - 180px)" }} className="custom-scrollbar">
         <Table
           stickyHeader

@@ -37,6 +37,10 @@
   }
 }
 
+.condition-value {
+  color: #d2e8ef;
+}
+
 ::-webkit-scrollbar {
   width: 8px; 
 }
