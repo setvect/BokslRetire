@@ -41,6 +41,10 @@
   color: #d2e8ef;
 }
 
+.negative-value {
+  color: #7d94f0 !important;
+}
+
 ::-webkit-scrollbar {
   width: 8px; 
 }

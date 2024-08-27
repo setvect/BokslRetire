@@ -45,7 +45,7 @@ function Report({ condition }: ReportProps) {
     const yearData: RetirementCalculatorYear[] = [];
 
     const startAmount = condition.netWorth;
-    const investmentIncome = (startAmount * condition.targetReturnRate) / 100;
+    const investmentIncome = startAmount > 0 ? (startAmount * condition.targetReturnRate) / 100 : 0;
     const savingsAmount = condition.expectedRetirementAge === 0 ? 0 : condition.annualSavings;
     const totalAssets = condition.netWorth + investmentIncome + condition.annualSavings;
     const cumulativeInflationRate = 0;
@@ -69,17 +69,24 @@ function Report({ condition }: ReportProps) {
       const beforeValue = yearData[yearIdx - 1];
 
       const startAmount = beforeValue.remainingAssets;
-      const investmentIncome = (startAmount * condition.targetReturnRate) / 100;
-      const savingsAmount =
-        condition.expectedRetirementAge <= yearIdx
-          ? 0
-          : condition.annualSavings * Math.pow(1 + condition.savingsGrowthRate / 100, yearIdx);
+
+      let investmentIncome = 0;
+      if (startAmount > 0) {
+        investmentIncome = (startAmount * condition.targetReturnRate) / 100;
+      }
+
+      let savingsAmount = 0;
+      if (condition.expectedRetirementAge > yearIdx) {
+        savingsAmount = condition.annualSavings * Math.pow(1 + condition.savingsGrowthRate / 100, yearIdx);
+      }
       const totalAssets = startAmount + investmentIncome + savingsAmount;
-      const cumulativeInflationRate = ((1 + condition.annualInflationRate / 100) ** yearIdx - 1) * 100;
-      const livingExpenses =
-        condition.expectedRetirementAge <= yearIdx
-          ? condition.retireSpend * (1 + cumulativeInflationRate / 100) * 12
-          : 0;
+      const cumulativeInflationRate =
+        ((1 + beforeValue.cumulativeInflationRate / 100) * (1 + condition.annualInflationRate / 100) - 1) * 100;
+
+      let livingExpenses = 0;
+      if (condition.expectedRetirementAge <= yearIdx) {
+        livingExpenses = condition.retireSpend * (1 + cumulativeInflationRate / 100) * 12;
+      }
       const remainingAssets = totalAssets - livingExpenses;
       const remainingAssetsPresentValue = remainingAssets / (1 + cumulativeInflationRate / 100);
 
@@ -140,7 +147,7 @@ function Report({ condition }: ReportProps) {
               <TableCell align="center">저축금액</TableCell>
               <TableCell align="center">누적 자산</TableCell>
               <TableCell align="center">누적 물가 상승률</TableCell>
-              <TableCell align="center">한해 생활비</TableCell>
+              <TableCell align="center">한해 생활비 지출</TableCell>
               <TableCell align="center">남은 자산</TableCell>
               <TableCell align="center">현재가치 환산</TableCell>
             </TableRow>
@@ -151,18 +158,30 @@ function Report({ condition }: ReportProps) {
                 <TableCell component="th" scope="row">
                   {row.year}년 ({index === 0 ? "올해" : `+${index}년`})
                 </TableCell>
-                <TableCell align="right">{formatNumber(row.startAmount, "0,0")}만원</TableCell>
-                <TableCell align="right">{formatNumber(row.investmentIncome, "0,0")}만원</TableCell>
-                <TableCell align="right">
-                  {row.savingsAmount === 0 ? "-" : formatNumber(row.savingsAmount, "0,0") + "만원"}
+                <TableCell align="right" className={row.startAmount < 0 ? "negative-value" : ""}>
+                  {formatNumber(row.startAmount, "0,0")}만원
                 </TableCell>
-                <TableCell align="right">{formatNumber(row.totalAssets, "0,0")}만원</TableCell>
-                <TableCell align="right">{formatNumber(row.cumulativeInflationRate, "0.00")}%</TableCell>
-                <TableCell align="right">
-                  {row.livingExpenses === 0 ? "-" : formatNumber(row.livingExpenses, "0,0") + "만원"}
+                <TableCell align="right" className={row.investmentIncome < 0 ? "negative-value" : ""}>
+                  {formatNumber(row.investmentIncome, "0,0")}만원
                 </TableCell>
-                <TableCell align="right">{formatNumber(row.remainingAssets, "0,0")}만원</TableCell>
-                <TableCell align="right">{formatNumber(row.remainingAssetsPresentValue, "0,0")}만원</TableCell>
+                <TableCell align="right" className={row.savingsAmount < 0 ? "negative-value" : ""}>
+                  {formatNumber(row.savingsAmount, "0,0")}만원
+                </TableCell>
+                <TableCell align="right" className={row.totalAssets < 0 ? "negative-value" : ""}>
+                  {formatNumber(row.totalAssets, "0,0")}만원
+                </TableCell>
+                <TableCell align="right" className={row.cumulativeInflationRate < 0 ? "negative-value" : ""}>
+                  {formatNumber(row.cumulativeInflationRate, "0,0.00")}%
+                </TableCell>
+                <TableCell align="right" className={row.livingExpenses < 0 ? "negative-value" : ""}>
+                  {formatNumber(row.livingExpenses, "0,0")}만원
+                </TableCell>
+                <TableCell align="right" className={row.remainingAssets < 0 ? "negative-value" : ""}>
+                  {formatNumber(row.remainingAssets, "0,0")}만원
+                </TableCell>
+                <TableCell align="right" className={row.remainingAssetsPresentValue < 0 ? "negative-value" : ""}>
+                  {formatNumber(row.remainingAssetsPresentValue, "0,0")}만원
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

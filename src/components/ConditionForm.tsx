@@ -103,7 +103,7 @@ const ConditionForm = forwardRef<ConditionFormHandle, ConditionFormProps>((props
       valid = false;
     }
     if (!condition.annualSavings) {
-      newErrors.annualSavings = "한해 저축금액을 입력하세요.";
+      newErrors.annualSavings = "은퇴전 한해 저축금액을 입력하세요.";
       valid = false;
     }
     if (!condition.savingsGrowthRate) {
@@ -170,7 +170,7 @@ const ConditionForm = forwardRef<ConditionFormHandle, ConditionFormProps>((props
         variant="standard"
       />
       <TextField
-        label="한해 저축금액"
+        label="은퇴전 한해 저축금액"
         type="text"
         sx={{ m: 1, flex: 1, width: "25ch", input: { textAlign: "right" } }}
         value={condition.annualSavings}
@@ -285,12 +285,7 @@ const ConditionForm = forwardRef<ConditionFormHandle, ConditionFormProps>((props
         variant="standard"
       />
 
-      <Button
-        variant="contained"
-        color="success"
-        sx={{ m: 1, flex: 0.5, marginTop: "20px" }}
-        onClick={handleFormSubmit}
-      >
+      <Button variant="contained" color="success" sx={{ m: 1, flex: 0.5, marginTop: "20px" }} onClick={handleFormSubmit}>
         계산하기
       </Button>
     </div>
