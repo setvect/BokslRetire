@@ -1,4 +1,5 @@
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material";
+import { Box, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from "recharts";
 import Paper from "@mui/material/Paper";
 import _ from "lodash";
 import { ReportCondtion } from "./ConditionForm";
@@ -23,6 +24,7 @@ interface ReportProps {
 
 function Report({ condition }: ReportProps) {
   const [retirementCalculatorYearList, setRetirementCalculatorYearList] = useState<RetirementCalculatorYear[]>([]);
+  const [isVisible, setIsVisible] = useState(false);
 
   const getBackgroundColor = (index: number) => {
     const group = Math.floor((index - 1) / 5);
@@ -34,12 +36,12 @@ function Report({ condition }: ReportProps) {
     }
   };
 
-  // 조건 변경에 따른 리포트 계산
-  useEffect(() => {
-    if (!condition) {
-      return;
-    }
+  const togglePopup = () => {
+    setIsVisible(!isVisible);
+  };
 
+  // 통계 리포트
+  function calcReport(condition: ReportCondtion) {
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear();
     const yearData: RetirementCalculatorYear[] = [];
@@ -103,6 +105,14 @@ function Report({ condition }: ReportProps) {
       });
     }
     setRetirementCalculatorYearList(yearData);
+  }
+
+  useEffect(() => {
+    if (!condition) {
+      return;
+    }
+
+    calcReport(condition);
   }, [condition]);
 
   const formatCondition = (condition: ReportCondtion): string => {
@@ -118,10 +128,49 @@ function Report({ condition }: ReportProps) {
     `;
   };
 
+  // 데이터 준비
+  const data = retirementCalculatorYearList.map((row) => ({
+    year: row.year,
+    remainingAssetsPresentValue: row.remainingAssetsPresentValue,
+  }));
+
+  // 범례 포맷터 함수
+  const legendFormatter = (value: string) => {
+    switch (value) {
+      case "remainingAssetsPresentValue":
+        return "현재가치 환산";
+      default:
+        return value;
+    }
+  };
+
+  // 툴팁 포맷터 함수
+  const tooltipFormatter = (value: any, name: string) => {
+    const formattedValue = formatNumber(value, "0,0") + "만원";
+    switch (name) {
+      case "remainingAssetsPresentValue":
+        return [formattedValue, "현재가치 환산"];
+      default:
+        return [formattedValue, name];
+    }
+  };
+
+  // 툴팁 레이블 포맷터 함수
+  const labelFormatter = (label: any) => {
+    const focusYear = Number(label);
+    const nowYear = new Date().getFullYear();
+    return `${label}년(+${focusYear - nowYear}년)`;
+  };
+
+  const yAxisTickFormatter = (value: number) => {
+    return `${formatNumber(value, "0,0")}만원`;
+  };
+
   return (
-    <div>
+    <div style={{ position: "relative", height: "100%" }}>
       <Typography variant="body1" sx={{ margin: "8px 0" }}>
         {condition && <span dangerouslySetInnerHTML={{ __html: formatCondition(condition) }} />}
+        <Button onClick={togglePopup}>Toggle Popup</Button>
       </Typography>
 
       <TableContainer component={Paper} sx={{ maxHeight: "calc(100vh - 180px)" }} className="custom-scrollbar">
@@ -187,6 +236,46 @@ function Report({ condition }: ReportProps) {
           </TableBody>
         </Table>
       </TableContainer>
+
+      {isVisible && (
+        <Box
+          sx={{
+            position: "absolute",
+            top: "30%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: "80%",
+            height: "550px",
+            padding: 2,
+            backgroundColor: "#555",
+            boxShadow: 3,
+            borderRadius: 2,
+            zIndex: 1000,
+          }}
+        >
+          <Typography variant="h6" align="center" color="#ddd" gutterBottom>
+            자산 변화 차트
+          </Typography>
+          <ResponsiveContainer width="100%" height="95%">
+            <LineChart data={data}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+              <XAxis dataKey="year" stroke="#ddd" />
+              <YAxis tickFormatter={yAxisTickFormatter} stroke="#ddd" width={120} tick={{ fill: "#ddd" }} tickMargin={10} />
+
+              <Tooltip
+                contentStyle={{ backgroundColor: "#333", border: "none" }}
+                itemStyle={{ color: "#ddd" }}
+                formatter={tooltipFormatter}
+                labelFormatter={labelFormatter}
+              />
+              <Legend formatter={legendFormatter} />
+              <ReferenceLine y={0} stroke="#b77" strokeWidth={2} />
+              <Line type="monotone" dataKey="remainingAssetsPresentValue" stroke="#82ca9d" activeDot={{ r: 8 }} />
+            </LineChart>
+          </ResponsiveContainer>
+          <Button onClick={togglePopup}>닫기</Button>
+        </Box>
+      )}
     </div>
   );
 }
