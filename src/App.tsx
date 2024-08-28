@@ -1,15 +1,5 @@
 import PetsIcon from "@mui/icons-material/Pets";
-import {
-  AppBar,
-  Box,
-  Button,
-  Container,
-  createTheme,
-  CssBaseline,
-  ThemeProvider,
-  Toolbar,
-  Typography,
-} from "@mui/material";
+import { AppBar, Box, Button, Container, createTheme, CssBaseline, ThemeProvider, Toolbar, Typography } from "@mui/material";
 import React, { useRef, useState } from "react";
 import "./App.css";
 import ConditionForm, { ConditionFormHandle, ConditionFormValue, ReportCondtion } from "./components/ConditionForm";

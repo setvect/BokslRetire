@@ -28,7 +28,7 @@ export type ReportCondtion = {
   targetReturnRate: number; // 목표 수익률
   annualInflationRate: number; // 연평균 물가상승률
   expectedRetirementAge: number; // 예상 은퇴시기
-  retireSpend: number; // 은퇴후 월 생활비(현재가치)
+  retireSpend: number; // 은퇴후 순지출(현재가치)
 };
 
 type ConditionFormProps = {
@@ -98,6 +98,8 @@ const ConditionForm = forwardRef<ConditionFormHandle, ConditionFormProps>((props
     let valid = true;
     const newErrors: Partial<Record<keyof ConditionFormValue, string>> = {};
 
+    const reportCondition = convertToReportCondition(condition);
+
     if (!condition.netWorth) {
       newErrors.netWorth = "순자산을 입력하세요.";
       valid = false;
@@ -110,22 +112,40 @@ const ConditionForm = forwardRef<ConditionFormHandle, ConditionFormProps>((props
       newErrors.savingsGrowthRate = "저축 증가률을 입력하세요.";
       valid = false;
     }
+
+    if (reportCondition.savingsGrowthRate > 50) {
+      newErrors.savingsGrowthRate = "저축 증가율은 50이하로 입력하세요.";
+      valid = false;
+    }
+
     if (condition.expectedRetirementAge === "") {
       newErrors.expectedRetirementAge = "예상(희망) 은퇴 시기를 입력하세요.";
       valid = false;
     }
     if (!condition.retireSpend) {
-      newErrors.retireSpend = "은퇴후 월 생활비를 입력하세요.";
+      newErrors.retireSpend = "은퇴후 순지출을 입력하세요.";
       valid = false;
     }
     if (!condition.targetReturnRate) {
       newErrors.targetReturnRate = "목표 수익률을 입력하세요.";
       valid = false;
     }
+
+    if (reportCondition.targetReturnRate > 30) {
+      newErrors.targetReturnRate = "목표 수익률은 30이하로 입력하세요.";
+      valid = false;
+    }
+
     if (!condition.annualInflationRate) {
       newErrors.annualInflationRate = "연평균 물가 상승률을 입력하세요.";
       valid = false;
     }
+
+    if (reportCondition.annualInflationRate > 20) {
+      newErrors.annualInflationRate = "연평균 물가 상승률은 20이하로 입력하세요.";
+      valid = false;
+    }
+
     setErrors(newErrors);
     return valid;
   };
@@ -164,7 +184,7 @@ const ConditionForm = forwardRef<ConditionFormHandle, ConditionFormProps>((props
               만원
             </InputAdornment>
           ),
-          inputProps: { maxLength: 10 },
+          inputProps: { maxLength: 7 },
           style: { textAlign: "right" },
         }}
         variant="standard"
@@ -183,7 +203,7 @@ const ConditionForm = forwardRef<ConditionFormHandle, ConditionFormProps>((props
               만원
             </InputAdornment>
           ),
-          inputProps: { maxLength: 10 },
+          inputProps: { maxLength: 6 },
           style: { textAlign: "right" },
         }}
         variant="standard"
@@ -228,7 +248,7 @@ const ConditionForm = forwardRef<ConditionFormHandle, ConditionFormProps>((props
         <FormHelperText>{errors.expectedRetirementAge}</FormHelperText>
       </FormControl>
       <TextField
-        label="은퇴후 월 생활비(현재가치)"
+        label="은퇴후 순지출(현재가치)"
         type="text"
         sx={{ m: 1, flex: 1.3, width: "25ch", input: { textAlign: "right" } }}
         value={condition.retireSpend}
