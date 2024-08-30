@@ -1,10 +1,11 @@
 import { Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material";
 import Paper from "@mui/material/Paper";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { formatNumber } from "../util/Util";
 import AssetChart from "./AssetChart";
 import { ReportCondtion } from "./ConditionForm";
 import InsertChartIcon from "@mui/icons-material/InsertChart";
+import "../App.css";
 
 type RetirementCalculatorYear = {
   year: number; // 해당 연도
@@ -133,14 +134,60 @@ function Report({ condition }: ReportProps) {
     `;
   };
 
-  // 데이터 준비
-  const data = retirementCalculatorYearList.map((row) => ({
-    year: row.year,
-    remainingAssetsPresentValue: row.remainingAssetsPresentValue,
-  }));
+  const tableRef = useRef<HTMLTableElement | null>(null);
+  const headerRef = useRef<HTMLTableSectionElement | null>(null);
+  const stickyHeaderRef = useRef<HTMLTableSectionElement | null>(null);
+
+  useEffect(() => {
+    const table = tableRef.current;
+    const header = headerRef.current;
+
+    if (!table || !header) return;
+
+    const stickyHeader = header.cloneNode(true) as HTMLTableSectionElement;
+    stickyHeader.classList.add("sticky-header");
+    document.body.appendChild(stickyHeader);
+    stickyHeaderRef.current = stickyHeader;
+
+    const handleScroll = () => {
+      const rect = table.getBoundingClientRect();
+      const tableTop = rect.top;
+      const tableBottom = rect.bottom;
+
+      if (tableTop < 50 && tableBottom > 0) {
+        stickyHeader.style.display = "block";
+        stickyHeader.style.width = table.offsetWidth + "px";
+        const ths = stickyHeader.querySelectorAll("th");
+        const originalThs = header.querySelectorAll("th");
+        ths.forEach((th, index) => {
+          th.style.width = originalThs[index].offsetWidth + "px";
+        });
+      } else {
+        stickyHeader.style.display = "none";
+      }
+    };
+
+    const handleResize = () => {
+      stickyHeader.style.width = table.offsetWidth + "px";
+      const ths = stickyHeader.querySelectorAll("th");
+      const originalThs = header.querySelectorAll("th");
+      ths.forEach((th, index) => {
+        th.style.width = originalThs[index].offsetWidth + "px";
+      });
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleResize);
+      document.body.removeChild(stickyHeader);
+    };
+  }, []);
 
   return (
-    <div style={{ position: "relative", height: "100%" }}>
+    <div className="table-container">
       <Typography variant="body1" sx={{ margin: "8px 0" }}>
         {condition && <span dangerouslySetInnerHTML={{ __html: formatCondition(condition) }} />}
         <Button onClick={togglePopup} startIcon={<InsertChartIcon />}>
@@ -148,9 +195,9 @@ function Report({ condition }: ReportProps) {
         </Button>
       </Typography>
 
-      <TableContainer component={Paper} sx={{ maxHeight: "calc(100vh - 200px)" }} className="custom-scrollbar">
+      <TableContainer component={Paper}>
         <Table
-          stickyHeader
+          ref={tableRef}
           sx={{
             tableLayout: "fixed",
             "& .MuiTableCell-root": {
@@ -159,11 +206,10 @@ function Report({ condition }: ReportProps) {
             "& .MuiTableHead-root .MuiTableCell-root": {
               fontWeight: "bold",
               backgroundColor: "background.paper",
-              zIndex: 1,
             },
           }}
         >
-          <TableHead>
+          <TableHead ref={headerRef}>
             <TableRow>
               <TableCell align="center">년도</TableCell>
               <TableCell align="center">시작금액</TableCell>

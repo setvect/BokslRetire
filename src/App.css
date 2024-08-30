@@ -61,3 +61,24 @@
 ::-webkit-scrollbar-track {
   background-color: #333; 
 }
+
+.sticky-header {
+  position: fixed;
+  top: 0;
+  background-color: #121212;
+  z-index: 1;
+  display: none;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-top: 50px;;
+  margin-left: 24px;
+}
+.sticky-header th {
+  border-top: 1px solid #555;
+  border-bottom: 1px solid #555;
+}
+.sticky-header th, td {
+  border: 1px solid #555;
+  text-align: center;
+  font-weight: 700;
+}
