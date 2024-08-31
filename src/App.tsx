@@ -1,6 +1,6 @@
 import PetsIcon from "@mui/icons-material/Pets";
 import { AppBar, Box, Button, Container, createTheme, CssBaseline, ThemeProvider, Toolbar, Typography } from "@mui/material";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./App.css";
 import ConditionForm, { ConditionFormHandle, ReportCondtion } from "./components/ConditionForm";
 import HowToUseModal from "./components/HowToUseModal";
@@ -29,7 +29,10 @@ function App() {
 
   const conditionSubmit = (reportCondition: ReportCondtion) => {
     setCondition(reportCondition);
+    const queryString = conditionToQueryString(reportCondition);
+    window.history.replaceState(null, "", `?${queryString}`);
   };
+
   const handleOpenHowToUse = () => setOpenHowToUse(true);
   const handleCloseHowToUse = () => setOpenHowToUse(false);
 
@@ -49,8 +52,38 @@ function App() {
 
   const applyCondition = (reportCondition: ReportCondtion) => {
     conditionFormRef.current?.initFomrmValue(reportCondition);
-    setCondition(reportCondition);
+    conditionSubmit(reportCondition);
   };
+
+  const conditionToQueryString = (condition: ReportCondtion) => {
+    const encodedCondition = encodeURIComponent(JSON.stringify(condition));
+    return `q=${encodedCondition}`;
+  };
+
+  const queryStringToCondition = (queryString: string): ReportCondtion | null => {
+    const params = new URLSearchParams(queryString);
+    const encodedCondition = params.get("q");
+    if (encodedCondition) {
+      try {
+        return JSON.parse(decodeURIComponent(encodedCondition)) as ReportCondtion;
+      } catch (error) {
+        console.error("Failed to parse condition from query string:", error);
+        return null;
+      }
+    }
+    return null;
+  };
+
+  useEffect(() => {
+    const queryString = window.location.search;
+    if (queryString) {
+      const parsedCondition = queryStringToCondition(queryString.substring(1));
+      if (parsedCondition) {
+        setCondition(parsedCondition);
+        conditionFormRef.current?.initFomrmValue(parsedCondition);
+      }
+    }
+  }, []);
 
   return (
     <ThemeProvider theme={darkTheme}>

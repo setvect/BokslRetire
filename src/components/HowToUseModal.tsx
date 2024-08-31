@@ -46,10 +46,10 @@ const HowToUseModal: React.FC<HowToUseProps> = ({ open, onClose, onApplyConditio
         </IconButton>
 
         <Grid container spacing={3}>
-          <Grid item xs={12} md={4} sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-            <img src={mainImage} alt="복슬은퇴 계산기" style={{ width: "80%", maxWidth: "200px", borderRadius: "50%" }} />
+          <Grid item xs={12} md={3} sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+            <img src={mainImage} alt="복슬은퇴 계산기" style={{ width: "80%", maxWidth: "110px", borderRadius: "50%" }} />
           </Grid>
-          <Grid item xs={12} md={8}>
+          <Grid item xs={12} md={9}>
             <Typography variant="h4" component="h1" gutterBottom>
               복슬은퇴 계산기
             </Typography>
@@ -67,16 +67,16 @@ const HowToUseModal: React.FC<HowToUseProps> = ({ open, onClose, onApplyConditio
         <List dense>
           {[
             { primary: "순자산", secondary: "자산 - 부채" },
-            { primary: "은퇴전 한해 저축금액", secondary: "현재 한해 동안 저축가능한 금액" },
+            { primary: "은퇴전 한해 저축금액", secondary: "한해 동안 저축가능한 금액" },
             { primary: "저축 증가률", secondary: "은퇴 전까지 해마다 늘어가는 저축 증가률" },
             { primary: "예상(희망) 은퇴 시기", secondary: "언제 은퇴하게 될것인지" },
-            { primary: "은퇴후 순지출(현재가치)", secondary: "은퇴후 '지출 - 소득' 금액. 현재가치로 작성" },
-            { primary: "목표 수익률", secondary: "순자산를 기준으로한 목표 투자수익률" },
+            { primary: "은퇴후 순지출(현재가치)", secondary: "은퇴후 '지출 - 소득' 금액 현재가치로 작성" },
+            { primary: "목표 수익률", secondary: "순자산를 기준으로한 목표 투자수익률(투자 금액 대비 수익률 아님)" },
             { primary: "연평균 물가 상승률", secondary: "예상하는 연평균 물가 상승률" },
           ].map((item, index) => (
             <ListItem key={index} sx={{ py: 0.5 }}>
               <Box display="flex" alignItems="center" width="100%">
-                <Typography variant="subtitle2" component="span" sx={{ flexShrink: 0, minWidth: "25%", mr: 1 }}>
+                <Typography variant="subtitle2" component="span" sx={{ flexShrink: 0, minWidth: "20%", mr: 1 }}>
                   {item.primary}:
                 </Typography>
                 <Typography variant="body2" component="span" color="text.secondary">
@@ -179,7 +179,7 @@ const HowToUseModal: React.FC<HowToUseProps> = ({ open, onClose, onApplyConditio
         <Divider sx={{ my: 3 }} />
 
         <Typography variant="h5" component="h2" gutterBottom>
-          관련 통계 데이터
+          은퇴 관련 통계 데이터
         </Typography>
         <Grid container spacing={2}>
           {[
