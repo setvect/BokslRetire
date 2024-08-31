@@ -26,6 +26,9 @@ interface ReportProps {
 function Report({ condition }: ReportProps) {
   const [retirementCalculatorYearList, setRetirementCalculatorYearList] = useState<RetirementCalculatorYear[]>([]);
   const [isVisible, setIsVisible] = useState(false);
+  const tableRef = useRef<HTMLTableElement | null>(null);
+  const headerRef = useRef<HTMLTableSectionElement | null>(null);
+  const stickyHeaderRef = useRef<HTMLTableSectionElement | null>(null);
 
   const getBackgroundColor = (index: number) => {
     const group = Math.floor((index - 1) / 5);
@@ -110,17 +113,6 @@ function Report({ condition }: ReportProps) {
     setRetirementCalculatorYearList(yearData);
   }
 
-  useEffect(() => {
-    if (!condition) {
-      return;
-    }
-
-    calcReport(condition);
-  }, [condition]);
-  const handleCloseChart = () => {
-    setIsVisible(false);
-  };
-
   const formatCondition = (condition: ReportCondtion): string => {
     return `
       <strong>결과</strong> - 
@@ -134,20 +126,19 @@ function Report({ condition }: ReportProps) {
     `;
   };
 
-  const tableRef = useRef<HTMLTableElement | null>(null);
-  const headerRef = useRef<HTMLTableSectionElement | null>(null);
-  const stickyHeaderRef = useRef<HTMLTableSectionElement | null>(null);
-
-  useEffect(() => {
+  const setupStickyHeader = () => {
     const table = tableRef.current;
     const header = headerRef.current;
 
-    if (!table || !header) return;
+    if (!table || !header) {
+      return;
+    }
 
     const stickyHeader = header.cloneNode(true) as HTMLTableSectionElement;
     stickyHeader.classList.add("sticky-header");
     document.body.appendChild(stickyHeader);
     stickyHeaderRef.current = stickyHeader;
+    stickyHeader.style.display = "none";
 
     const handleScroll = () => {
       const rect = table.getBoundingClientRect();
@@ -184,6 +175,21 @@ function Report({ condition }: ReportProps) {
       window.removeEventListener("resize", handleResize);
       document.body.removeChild(stickyHeader);
     };
+  };
+
+  useEffect(() => {
+    if (!condition) {
+      return;
+    }
+
+    calcReport(condition);
+  }, [condition]);
+  const handleCloseChart = () => {
+    setIsVisible(false);
+  };
+
+  useEffect(() => {
+    return setupStickyHeader();
   }, []);
 
   return (

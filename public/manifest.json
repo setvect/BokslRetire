@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "복슬은퇴 계산기",
+  "name": "복슬은퇴 계산기",
   "icons": [
     {
       "src": "favicon.ico",
