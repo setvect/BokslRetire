@@ -1,7 +1,7 @@
-import React from "react";
-import { Box, IconButton, Typography } from "@mui/material";
+import { Box, Button, Checkbox, FormControlLabel, IconButton, Modal, Switch, Typography } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from "recharts";
+import React, { useEffect, useState } from "react";
+import { CartesianGrid, Legend, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { formatNumber } from "../util/Util";
 
 type AssetChartProps = {
@@ -10,83 +10,110 @@ type AssetChartProps = {
   onClose: () => void;
 };
 
-// 범례 포맷터 함수
-const legendFormatter = (value: string) => {
-  switch (value) {
-    case "remainingAssetsPresentValue":
-      return "자산(현재가치 기준)";
-    default:
-      return value;
-  }
+const style = {
+  position: "absolute" as "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: "80%",
+  height: "70%",
+  bgcolor: "background.paper",
+  boxShadow: 24,
+  p: 4,
 };
 
-// 툴팁 포맷터 함수
-const tooltipFormatter = (value: any, name: string) => {
-  const formattedValue = formatNumber(value, "0,0") + "만원";
-  switch (name) {
-    case "remainingAssetsPresentValue":
-      return [formattedValue, "자산(현재가치 기준)"];
-    default:
-      return [formattedValue, name];
-  }
-};
+const AssetChart: React.FC<AssetChartProps> = ({ data, open, onClose }) => {
+  const [isLogScale, setIsLogScale] = useState(false);
 
-// 툴팁 레이블 포맷터 함수
-const labelFormatter = (label: any) => {
-  const focusYear = Number(label);
-  const nowYear = new Date().getFullYear();
-  return `${label}년(+${focusYear - nowYear}년)`;
-};
+  // 범례 포맷터 함수
+  const legendFormatter = (value: string) => {
+    switch (value) {
+      case "remainingAssetsPresentValue":
+        return "자산(현재가치 기준)";
+      default:
+        return value;
+    }
+  };
 
-// Y축 틱 포맷터 함수
-const yAxisTickFormatter = (value: number) => {
-  return `${formatNumber(value, "0,0")}만원`;
-};
+  // 툴팁 포맷터 함수
+  const tooltipFormatter = (value: any, name: string) => {
+    const formattedValue = formatNumber(value, "0,0") + "만원";
+    switch (name) {
+      case "remainingAssetsPresentValue":
+        return [formattedValue, "자산(현재가치 기준)"];
+      default:
+        return [formattedValue, name];
+    }
+  };
 
-const AssetChart = ({ data, open, onClose }: AssetChartProps): React.ReactElement | null => {
-  if (!open) {
-    return null;
-  }
+  // 툴팁 레이블 포맷터 함수
+  const labelFormatter = (label: any) => {
+    const focusYear = Number(label);
+    const nowYear = new Date().getFullYear();
+    return `${label}년(+${focusYear - nowYear}년)`;
+  };
+
+  // Y축 틱 포맷터 함수
+  const yAxisTickFormatter = (value: number) => {
+    return `${formatNumber(value, "0,0")}만원`;
+  };
+
+  const handleLogScaleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIsLogScale(event.target.checked);
+  };
+
+  useEffect(() => {
+    if (open) {
+      setIsLogScale(false);
+    }
+  }, [open]);
+
+  const hasNegativeValues = data.some((item) => item.remainingAssetsPresentValue <= 0);
+  const maxValue = Math.max(...data.map((item) => item.remainingAssetsPresentValue));
+  const marginFactor = 1.05; // 5% margin 추가
+  const adjustedMaxValue = maxValue * marginFactor;
 
   return (
-    <Box
-      sx={{
-        position: "absolute",
-        top: "30%",
-        left: "50%",
-        transform: "translate(-50%, -50%)",
-        width: "80%",
-        height: "550px",
-        padding: 2,
-        backgroundColor: "#555",
-        boxShadow: 3,
-        borderRadius: 2,
-        zIndex: 1000,
-      }}
-    >
-      <IconButton sx={{ position: "absolute", top: 8, right: 8 }} onClick={onClose}>
-        <CloseIcon />
-      </IconButton>
-      <Typography variant="h6" align="center" color="#ddd" gutterBottom>
-        자산 변화 차트
-      </Typography>
-      <ResponsiveContainer width="100%" height="95%">
-        <LineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-          <XAxis dataKey="year" stroke="#ddd" />
-          <YAxis tickFormatter={yAxisTickFormatter} stroke="#ddd" width={120} tick={{ fill: "#ddd" }} tickMargin={10} />
-          <Tooltip
-            contentStyle={{ backgroundColor: "#333", border: "none" }}
-            itemStyle={{ color: "#ddd" }}
-            formatter={tooltipFormatter}
-            labelFormatter={labelFormatter}
-          />
-          <Legend formatter={legendFormatter} />
-          <ReferenceLine y={0} stroke="#b77" strokeWidth={2} />
-          <Line type="monotone" dataKey="remainingAssetsPresentValue" stroke="#82ca9d" activeDot={{ r: 8 }} />
-        </LineChart>
-      </ResponsiveContainer>
-    </Box>
+    <Modal open={open} onClose={onClose} aria-labelledby="modal-title" aria-describedby="modal-description">
+      <Box sx={style}>
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <Typography id="modal-title" variant="h6" component="h2" sx={{ textAlign: "center", flexGrow: 1 }}>
+            자산 변화 차트
+          </Typography>
+          {!hasNegativeValues && (
+            <FormControlLabel control={<Checkbox checked={isLogScale} onChange={handleLogScaleChange} />} label="로그 스케일" />
+          )}
+          <IconButton onClick={onClose}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
+
+        <ResponsiveContainer width="100%" height="95%">
+          <LineChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+            <XAxis dataKey="year" stroke="#ddd" />
+            <YAxis
+              tickFormatter={yAxisTickFormatter}
+              scale={isLogScale ? "log" : "linear"}
+              domain={isLogScale ? ["auto", adjustedMaxValue] : [0, adjustedMaxValue]}
+              stroke="#ddd"
+              width={120}
+              tick={{ fill: "#ddd" }}
+              tickMargin={10}
+            />
+            <Tooltip
+              contentStyle={{ backgroundColor: "#333", border: "none" }}
+              itemStyle={{ color: "#ddd" }}
+              formatter={tooltipFormatter}
+              labelFormatter={labelFormatter}
+            />
+            <Legend formatter={legendFormatter} />
+            <ReferenceLine y={0} stroke="#b77" strokeWidth={2} />
+            <Line type="monotone" dataKey="remainingAssetsPresentValue" stroke="#82ca9d" activeDot={{ r: 8 }} />
+          </LineChart>
+        </ResponsiveContainer>
+      </Box>
+    </Modal>
   );
 };
 

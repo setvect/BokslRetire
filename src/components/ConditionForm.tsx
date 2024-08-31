@@ -306,7 +306,7 @@ const ConditionForm = forwardRef<ConditionFormHandle, ConditionFormProps>((props
       />
 
       <Button variant="contained" color="success" sx={{ m: 1, flex: 0.5, marginTop: "20px" }} onClick={handleFormSubmit}>
-        계산하기
+        결과보기
       </Button>
     </div>
   );

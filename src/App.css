@@ -62,6 +62,10 @@
   background-color: #333; 
 }
 
+.table-container{
+  margin-bottom: 20px;
+}
+
 .sticky-header {
   position: fixed;
   top: 0;
