@@ -1,8 +1,9 @@
 import PetsIcon from "@mui/icons-material/Pets";
 import { AppBar, Box, Button, Container, createTheme, CssBaseline, ThemeProvider, Toolbar, Typography } from "@mui/material";
-import React, { useRef, useState } from "react";
+import { useRef, useState } from "react";
 import "./App.css";
-import ConditionForm, { ConditionFormHandle, ConditionFormValue, ReportCondtion } from "./components/ConditionForm";
+import ConditionForm, { ConditionFormHandle, ReportCondtion } from "./components/ConditionForm";
+import HowToUseModal from "./components/HowToUseModal";
 import Report from "./components/Report";
 
 const darkTheme = createTheme({
@@ -24,10 +25,13 @@ const darkTheme = createTheme({
 
 function App() {
   const [condition, setCondition] = useState<ReportCondtion | null>(null);
+  const [openHowToUse, setOpenHowToUse] = useState(false);
 
   const conditionSubmit = (reportCondition: ReportCondtion) => {
     setCondition(reportCondition);
   };
+  const handleOpenHowToUse = () => setOpenHowToUse(true);
+  const handleCloseHowToUse = () => setOpenHowToUse(false);
 
   const conditionFormRef = useRef<ConditionFormHandle>(null);
 
@@ -43,6 +47,11 @@ function App() {
     });
   };
 
+  const applyCondition = (reportCondition: ReportCondtion) => {
+    conditionFormRef.current?.initFomrmValue(reportCondition);
+    setCondition(reportCondition);
+  };
+
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
@@ -51,6 +60,8 @@ function App() {
           <PetsIcon sx={{ color: "#ffee77", marginBottom: "3px", marginRight: "5px" }} />
           <Typography variant="h6">복슬은퇴 계산기</Typography>
           <Button onClick={callCustomFunction}>조건값 초기화</Button>
+          <Button onClick={handleOpenHowToUse}>사용법 안내</Button>
+          <HowToUseModal open={openHowToUse} onClose={handleCloseHowToUse} onApplyCondition={applyCondition} />
         </Toolbar>
       </AppBar>
       <Box sx={{ mt: "55px" }}>

@@ -1,5 +1,5 @@
-import { Box, Button, Checkbox, FormControlLabel, IconButton, Modal, Switch, Typography } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import { Box, Checkbox, DialogTitle, FormControlLabel, IconButton, Modal, Typography } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { CartesianGrid, Legend, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { formatNumber } from "../util/Util";
@@ -22,7 +22,7 @@ const style = {
   p: 4,
 };
 
-const AssetChart: React.FC<AssetChartProps> = ({ data, open, onClose }) => {
+const AssetChartModal: React.FC<AssetChartProps> = ({ data, open, onClose }) => {
   const [isLogScale, setIsLogScale] = useState(false);
 
   // 범례 포맷터 함수
@@ -76,17 +76,35 @@ const AssetChart: React.FC<AssetChartProps> = ({ data, open, onClose }) => {
   return (
     <Modal open={open} onClose={onClose} aria-labelledby="modal-title" aria-describedby="modal-description">
       <Box sx={style}>
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <Typography id="modal-title" variant="h6" component="h2" sx={{ textAlign: "center", flexGrow: 1 }}>
+        <DialogTitle>
+          <Typography variant="h6" component="h2" sx={{ textAlign: "center", flexGrow: 1 }}>
             자산 변화 차트
           </Typography>
-          {!hasNegativeValues && (
-            <FormControlLabel control={<Checkbox checked={isLogScale} onChange={handleLogScaleChange} />} label="로그 스케일" />
-          )}
-          <IconButton onClick={onClose}>
+          <IconButton
+            aria-label="close"
+            onClick={onClose}
+            sx={{
+              position: "absolute",
+              right: 8,
+              top: 8,
+              color: (theme) => theme.palette.grey[500],
+            }}
+          >
             <CloseIcon />
           </IconButton>
-        </Box>
+          {!hasNegativeValues && (
+            <FormControlLabel
+              sx={{
+                position: "absolute",
+                right: 20,
+                top: 50,
+                color: (theme) => theme.palette.grey[500],
+              }}
+              control={<Checkbox checked={isLogScale} onChange={handleLogScaleChange} />}
+              label="로그 스케일"
+            />
+          )}
+        </DialogTitle>
 
         <ResponsiveContainer width="100%" height="95%">
           <LineChart data={data}>
@@ -117,4 +135,4 @@ const AssetChart: React.FC<AssetChartProps> = ({ data, open, onClose }) => {
   );
 };
 
-export default AssetChart;
+export default AssetChartModal;

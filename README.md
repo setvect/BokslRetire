@@ -36,8 +36,9 @@ $ npm run build
 
 ## 5. 각종 통계 자료
 
+- [기대수명](https://www.index.go.kr/unity/potal/indicator/IndexInfo.do?clasCd=2&idxCd=4234)
 - [소비자물가 상승률](https://www.index.go.kr/unify/idx-info.do?idxCd=4226) - 최근 10년(2014 ~ 2023) 평균 물가상승률 1.37%
-- [가구자산](https://www.index.go.kr/unity/potal/indicator/IndexInfo.do?clasCd=10&idxCd=F0139)
+- [가구 순자산](https://www.index.go.kr/unity/potal/indicator/IndexInfo.do?clasCd=10&idxCd=F0139)
 - [성별 연령대별 소득](https://kosis.kr/statHtml/statHtml.do?orgId=101&tblId=DT_1EP_2010&conn_path=I2)
 - [가구소비지출](https://kosis.kr/visual/nsportalStats/detailContents.do?statJipyoId=3695&vStatJipyoId=5129&listId=F)
   - [가구 인원별 소득, 소비지출](https://kosis.kr/statHtml/statHtml.do?orgId=101&tblId=DT_1L9U005&vw_cd=MT_ZTITLE&list_id=&scrId=&seqNo=&lang_mode=ko&obj_var_id=&itm_id=&conn_path=E1&docId=0382660325&markType=S)

@@ -2,7 +2,7 @@ import { Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRo
 import Paper from "@mui/material/Paper";
 import { useEffect, useRef, useState } from "react";
 import { formatNumber } from "../util/Util";
-import AssetChart from "./AssetChart";
+import AssetChartModal from "./AssetChartModal";
 import { ReportCondtion } from "./ConditionForm";
 import InsertChartIcon from "@mui/icons-material/InsertChart";
 import "../App.css";
@@ -263,7 +263,7 @@ function Report({ condition }: ReportProps) {
           </TableBody>
         </Table>
       </TableContainer>
-      <AssetChart data={retirementCalculatorYearList} open={isVisible} onClose={handleCloseChart} />
+      <AssetChartModal data={retirementCalculatorYearList} open={isVisible} onClose={handleCloseChart} />
     </div>
   );
 }
