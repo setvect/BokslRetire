@@ -1,11 +1,11 @@
-import PetsIcon from "@mui/icons-material/Pets";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import PetsIcon from "@mui/icons-material/Pets";
 import { AppBar, Box, Button, Container, createTheme, CssBaseline, Link, ThemeProvider, Toolbar, Typography } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
 import ConditionForm, { ConditionFormHandle, ReportCondtion } from "./components/ConditionForm";
 import HowToUseModal from "./components/HowToUseModal";
-import Report from "./components/Report";
+import ReportTabPanel, { ReportTabHandle } from "./components/ReportTabPanel";
 
 const darkTheme = createTheme({
   palette: {
@@ -28,16 +28,18 @@ function App() {
   const [condition, setCondition] = useState<ReportCondtion | null>(null);
   const [openHowToUse, setOpenHowToUse] = useState(false);
 
-  const conditionSubmit = (reportCondition: ReportCondtion) => {
-    setCondition(reportCondition);
-    const queryString = conditionToQueryString(reportCondition);
-    window.history.replaceState(null, "", `?${queryString}`);
-  };
-
   const handleOpenHowToUse = () => setOpenHowToUse(true);
   const handleCloseHowToUse = () => setOpenHowToUse(false);
 
   const conditionFormRef = useRef<ConditionFormHandle>(null);
+  const reportTabRef = useRef<ReportTabHandle>(null);
+
+  const conditionSubmit = (reportCondition: ReportCondtion) => {
+    setCondition(reportCondition);
+    const queryString = conditionToQueryString(reportCondition);
+    window.history.replaceState(null, "", `?${queryString}`);
+    reportTabRef.current?.addCondtion(reportCondition);
+  };
 
   const applyCondition = (reportCondition: ReportCondtion) => {
     conditionFormRef.current?.initFomrmValue(reportCondition);
@@ -91,11 +93,11 @@ function App() {
           <HowToUseModal open={openHowToUse} onClose={handleCloseHowToUse} onApplyCondition={applyCondition} />
         </Toolbar>
       </AppBar>
-      <Box sx={{ mt: "55px" }}>
-        <Container maxWidth={false}>
+      <Box sx={{ mt: "55px", display: "flex", flexDirection: "column", height: "calc(100vh - 55px)" }}>
+        <Container maxWidth={false} sx={{ flex: "0 0 auto" }}>
           <ConditionForm ref={conditionFormRef} onSubmit={conditionSubmit} />
-          <Report condition={condition} />
         </Container>
+        <ReportTabPanel ref={reportTabRef} />
       </Box>
     </ThemeProvider>
   );

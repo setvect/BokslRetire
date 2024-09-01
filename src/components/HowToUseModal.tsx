@@ -56,6 +56,9 @@ const HowToUseModal: React.FC<HowToUseProps> = ({ open, onClose, onApplyConditio
             <Typography variant="subtitle1" gutterBottom>
               지금부터 은퇴 후 생활까지 자신의 자산 변화를 어림짐작으로 계산하는 프로그램입니다.
             </Typography>
+            <Link href="https://github.com/setvect/BokslRetire" target="_blank" rel="noopener" sx={{ float: "right" }}>
+              Github Project 바로가기
+            </Link>
           </Grid>
         </Grid>
 

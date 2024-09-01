@@ -2,7 +2,7 @@
 
 ## 1. 주요기능
 
-- 내 자산, 저축금액, 투자 수익률을 통해 은퇴후 사용가능한 지출 계산
+지금부터 은퇴 후 생활까지 자신의 자산 변화를 어림짐작으로 계산하는 프로그램입니다.
 
 ## 2. 실행 및 빌드
 
@@ -24,14 +24,46 @@ $ npm start
 $ npm run build
 ```
 
-- 빌드 결과는 `` 폴더에 생성됨
+- 빌드 결과는 `/build` 폴더에 생성됨
+
+### 2.4. 빌드 결과 실행
+
+```shell
+$ npm install -g serve # 최초 1번만 실행
+$ serve -s build
+```
+
+실행중에 아래 오류가 발생하면
+
+```
+serve -s build
+serve : 이 시스템에서 스크립트를 실행할 수 없으므로 C:\Users\{사용자}\AppData\Roaming\npm\serve.ps1 파일을 로드할 수 없습니다. 자세한 내용은 about_Execution_Policies(https://go.microsoft.com/fwlink/?LinkID=135170)를 참조하십시오.
+위치 줄:1 문자:1
++ serve -s build
++ ~~~~~
+    + CategoryInfo          : 보안 오류: (:) [], PSSecurityException
+    + FullyQualifiedErrorId : UnauthorizedAccess
+```
+
+PowerShell을 관리자 모드로 실행
+
+```
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+serve -s build
+```
 
 ## 3. 주요화면
 
+- 계산 결과
+  ![img_1.png](docs/img_1.png)
+
+- 자산 변화 차트
+  ![img_2.png](docs/img_2.png)
+
 ## 4. 개발환경
 
-### 4.1. 주요 프레임워크 및 라이브러리
-
+- [typescript](https://www.typescriptlang.org)
+- [react](https://ko.legacy.reactjs.org)
 - [Material-UI](https://mui.com/)
 
 ## 5. 각종 통계 자료
