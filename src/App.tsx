@@ -93,7 +93,7 @@ function App() {
           <HowToUseModal open={openHowToUse} onClose={handleCloseHowToUse} onApplyCondition={applyCondition} />
         </Toolbar>
       </AppBar>
-      <Box sx={{ mt: "55px", display: "flex", flexDirection: "column", height: "calc(100vh - 55px)" }}>
+      <Box sx={{ mt: "55px", display: "flex", flexDirection: "column" }}>
         <Container maxWidth={false} sx={{ flex: "0 0 auto" }}>
           <ConditionForm ref={conditionFormRef} onSubmit={conditionSubmit} />
         </Container>
