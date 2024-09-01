@@ -38,18 +38,6 @@ function App() {
 
   const conditionFormRef = useRef<ConditionFormHandle>(null);
 
-  const callCustomFunction = () => {
-    conditionFormRef.current?.initFomrmValue({
-      netWorth: 25000,
-      annualSavings: 1500,
-      savingsGrowthRate: 7,
-      targetReturnRate: 6.5,
-      annualInflationRate: 3.1,
-      expectedRetirementAge: 15,
-      retireSpend: 250,
-    });
-  };
-
   const applyCondition = (reportCondition: ReportCondtion) => {
     conditionFormRef.current?.initFomrmValue(reportCondition);
     conditionSubmit(reportCondition);
@@ -92,7 +80,6 @@ function App() {
         <Toolbar sx={{ minHeight: "50px !important", height: "50px" }}>
           <PetsIcon sx={{ color: "#ffee77", marginBottom: "3px", marginRight: "5px" }} />
           <Typography variant="h6">복슬은퇴 계산기</Typography>
-          <Button onClick={callCustomFunction}>조건값 초기화</Button>
           <Button onClick={handleOpenHowToUse}>사용법 안내</Button>
           <HowToUseModal open={openHowToUse} onClose={handleCloseHowToUse} onApplyCondition={applyCondition} />
         </Toolbar>

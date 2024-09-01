@@ -5,6 +5,8 @@ import { formatNumber } from "../util/Util";
 import AssetChartModal from "./AssetChartModal";
 import { ReportCondtion } from "./ConditionForm";
 import InsertChartIcon from "@mui/icons-material/InsertChart";
+import GetAppIcon from "@mui/icons-material/GetApp";
+import * as XLSX from "xlsx";
 import "../App.css";
 
 type RetirementCalculatorYear = {
@@ -25,7 +27,7 @@ interface ReportProps {
 
 function Report({ condition }: ReportProps) {
   const [retirementCalculatorYearList, setRetirementCalculatorYearList] = useState<RetirementCalculatorYear[]>([]);
-  const [isVisible, setIsVisible] = useState(false);
+  const [isOpenChart, setIsOpenChart] = useState(false);
   const tableRef = useRef<HTMLTableElement | null>(null);
   const headerRef = useRef<HTMLTableSectionElement | null>(null);
   const stickyHeaderRef = useRef<HTMLTableSectionElement | null>(null);
@@ -40,8 +42,20 @@ function Report({ condition }: ReportProps) {
     }
   };
 
-  const togglePopup = () => {
-    setIsVisible(!isVisible);
+  const openChartModal = () => {
+    setIsOpenChart(!isOpenChart);
+  };
+
+  const handleDownload = () => {
+    const table = tableRef.current;
+    if (!table) {
+      return;
+    }
+
+    const ws = XLSX.utils.table_to_sheet(table);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Report");
+    XLSX.writeFile(wb, "복슬은퇴_계산기_결과.xlsx");
   };
 
   // 통계 리포트
@@ -119,10 +133,10 @@ function Report({ condition }: ReportProps) {
       순자산: <span class="condition-value">${formatNumber(condition.netWorth, "0,0")}만원</span>, 
       저축금액: <span class="condition-value">$${formatNumber(condition.annualSavings, "0,0")}만원</span>, 
       저축 증가율: <span class="condition-value">$${condition.savingsGrowthRate}%</span>, 
-      목표 수익률: <span class="condition-value">$${condition.targetReturnRate}%</span>, 
-      물가 상승률: <span class="condition-value">$${condition.annualInflationRate}%</span>, 
       은퇴 시기: <span class="condition-value">$${condition.expectedRetirementAge}년후</span>, 
-      은퇴후 월 생활비: <span class="condition-value">$${formatNumber(condition.retireSpend, "0,0")}만원</span>
+      은퇴후 월 순지출: <span class="condition-value">$${formatNumber(condition.retireSpend, "0,0")}만원</span>,
+      목표 수익률: <span class="condition-value">$${condition.targetReturnRate}%</span>, 
+      물가 상승률: <span class="condition-value">$${condition.annualInflationRate}%</span>
     `;
   };
 
@@ -185,7 +199,7 @@ function Report({ condition }: ReportProps) {
     calcReport(condition);
   }, [condition]);
   const handleCloseChart = () => {
-    setIsVisible(false);
+    setIsOpenChart(false);
   };
 
   useEffect(() => {
@@ -196,8 +210,11 @@ function Report({ condition }: ReportProps) {
     <div className="table-container">
       <Typography variant="body1" sx={{ margin: "8px 0" }}>
         {condition && <span dangerouslySetInnerHTML={{ __html: formatCondition(condition) }} />}
-        <Button onClick={togglePopup} startIcon={<InsertChartIcon />}>
+        <Button onClick={openChartModal} startIcon={<InsertChartIcon />}>
           차트보기
+        </Button>
+        <Button onClick={handleDownload} startIcon={<GetAppIcon />}>
+          다운로드
         </Button>
       </Typography>
 
@@ -263,7 +280,7 @@ function Report({ condition }: ReportProps) {
           </TableBody>
         </Table>
       </TableContainer>
-      <AssetChartModal data={retirementCalculatorYearList} open={isVisible} onClose={handleCloseChart} />
+      <AssetChartModal data={retirementCalculatorYearList} open={isOpenChart} onClose={handleCloseChart} />
     </div>
   );
 }
