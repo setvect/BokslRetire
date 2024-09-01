@@ -4,8 +4,11 @@ import CloseIcon from "@mui/icons-material/Close";
 import CancelPresentationIcon from "@mui/icons-material/CancelPresentation";
 import Report from "./Report";
 import { ReportCondtion } from "./ConditionForm";
+import HowToUse from "./HowToUse";
 
-interface TabPanelProps {}
+interface TabPanelProps {
+  onApplyCondition: (condition: ReportCondtion) => void;
+}
 
 export interface ReportTabHandle {
   addCondtion: (init: ReportCondtion) => void;
@@ -68,6 +71,14 @@ const ReportTabPanel = forwardRef<ReportTabHandle, TabPanelProps>((props, ref) =
             {activeTab === index && <Report condition={tab.condition} />}
           </Box>
         ))}
+
+        {tabs.length === 0 && (
+          <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+            <Box sx={{ width: "900px" }}>
+              <HowToUse onApplyCondition={props.onApplyCondition} />
+            </Box>
+          </div>
+        )}
       </Container>
     </Box>
   );

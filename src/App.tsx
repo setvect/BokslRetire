@@ -97,7 +97,7 @@ function App() {
         <Container maxWidth={false} sx={{ flex: "0 0 auto" }}>
           <ConditionForm ref={conditionFormRef} onSubmit={conditionSubmit} />
         </Container>
-        <ReportTabPanel ref={reportTabRef} />
+        <ReportTabPanel ref={reportTabRef} onApplyCondition={applyCondition} />
       </Box>
     </ThemeProvider>
   );

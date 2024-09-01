@@ -129,7 +129,7 @@ function Report({ condition }: ReportProps) {
 
   const formatCondition = (condition: ReportCondtion): string => {
     return `
-      <strong>결과</strong> - 
+      <strong>조건</strong> -  
       순자산: <span class="condition-value">${formatNumber(condition.netWorth, "0,0")}만원</span>, 
       저축금액: <span class="condition-value">$${formatNumber(condition.annualSavings, "0,0")}만원</span>, 
       저축 증가율: <span class="condition-value">$${condition.savingsGrowthRate}%</span>, 
@@ -217,11 +217,6 @@ function Report({ condition }: ReportProps) {
           <Button onClick={handleDownload} startIcon={<GetAppIcon />}>
             다운로드
           </Button>
-        </Typography>
-      )}
-      {!condition && (
-        <Typography variant="body1" sx={{ margin: "14px 0" }}>
-          &nbsp;
         </Typography>
       )}
 
