@@ -131,12 +131,12 @@ function Report({ condition }: ReportProps) {
     return `
       <strong>조건</strong> -  
       순자산: <span class="condition-value">${formatNumber(condition.netWorth, "0,0")}만원</span>, 
-      저축금액: <span class="condition-value">$${formatNumber(condition.annualSavings, "0,0")}만원</span>, 
-      저축 증가율: <span class="condition-value">$${condition.savingsGrowthRate}%</span>, 
-      은퇴 시기: <span class="condition-value">$${condition.expectedRetirementAge}년후</span>, 
-      은퇴후 월 순지출: <span class="condition-value">$${formatNumber(condition.retireSpend, "0,0")}만원</span>,
-      목표 수익률: <span class="condition-value">$${condition.targetReturnRate}%</span>, 
-      물가 상승률: <span class="condition-value">$${condition.annualInflationRate}%</span>
+      저축금액: <span class="condition-value">${formatNumber(condition.annualSavings, "0,0")}만원</span>, 
+      저축 증가율: <span class="condition-value">${condition.savingsGrowthRate}%</span>, 
+      은퇴 시기: <span class="condition-value">${condition.expectedRetirementAge}년후</span>, 
+      은퇴후 월 순지출: <span class="condition-value">${formatNumber(condition.retireSpend, "0,0")}만원</span>,
+      목표 수익률: <span class="condition-value">${condition.targetReturnRate}%</span>, 
+      물가 상승률: <span class="condition-value">${condition.annualInflationRate}%</span>
     `;
   };
 
