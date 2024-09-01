@@ -208,15 +208,22 @@ function Report({ condition }: ReportProps) {
 
   return (
     <div className="table-container">
-      <Typography variant="body1" sx={{ margin: "8px 0" }}>
-        {condition && <span dangerouslySetInnerHTML={{ __html: formatCondition(condition) }} />}
-        <Button onClick={openChartModal} startIcon={<InsertChartIcon />}>
-          차트보기
-        </Button>
-        <Button onClick={handleDownload} startIcon={<GetAppIcon />}>
-          다운로드
-        </Button>
-      </Typography>
+      {condition && (
+        <Typography variant="body1" sx={{ margin: "8px 0" }}>
+          <span dangerouslySetInnerHTML={{ __html: formatCondition(condition) }} />
+          <Button onClick={openChartModal} startIcon={<InsertChartIcon />}>
+            차트보기
+          </Button>
+          <Button onClick={handleDownload} startIcon={<GetAppIcon />}>
+            다운로드
+          </Button>
+        </Typography>
+      )}
+      {!condition && (
+        <Typography variant="body1" sx={{ margin: "14px 0" }}>
+          &nbsp;
+        </Typography>
+      )}
 
       <TableContainer component={Paper}>
         <Table

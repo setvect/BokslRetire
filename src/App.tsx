@@ -1,5 +1,6 @@
 import PetsIcon from "@mui/icons-material/Pets";
-import { AppBar, Box, Button, Container, createTheme, CssBaseline, ThemeProvider, Toolbar, Typography } from "@mui/material";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import { AppBar, Box, Button, Container, createTheme, CssBaseline, Link, ThemeProvider, Toolbar, Typography } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
 import ConditionForm, { ConditionFormHandle, ReportCondtion } from "./components/ConditionForm";
@@ -79,8 +80,14 @@ function App() {
       <AppBar position="fixed">
         <Toolbar sx={{ minHeight: "50px !important", height: "50px" }}>
           <PetsIcon sx={{ color: "#ffee77", marginBottom: "3px", marginRight: "5px" }} />
-          <Typography variant="h6">복슬은퇴 계산기</Typography>
-          <Button onClick={handleOpenHowToUse}>사용법 안내</Button>
+          <Typography variant="h6">
+            <Link underline="none" href="/" sx={{ color: "inherit" }}>
+              복슬은퇴 계산기
+            </Link>
+          </Typography>
+          <Button onClick={handleOpenHowToUse} startIcon={<HelpOutlineIcon sx={{ margin: "-2px -2px 0 0" }} />} sx={{ marginLeft: "10px" }}>
+            사용법 안내
+          </Button>
           <HowToUseModal open={openHowToUse} onClose={handleCloseHowToUse} onApplyCondition={applyCondition} />
         </Toolbar>
       </AppBar>
