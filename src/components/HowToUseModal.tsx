@@ -1,7 +1,7 @@
 import CloseIcon from "@mui/icons-material/Close";
 import { Box, IconButton, Modal } from "@mui/material";
 import React from "react";
-import { ReportCondtion } from "./ConditionForm";
+import { SimpleCondtion } from "./ConditionForm";
 import HowToUse from "./HowToUse";
 
 const MODAL_STYLE = {
@@ -21,11 +21,11 @@ const MODAL_STYLE = {
 interface HowToUseModalProps {
   open: boolean;
   onClose: () => void;
-  onApplyCondition: (condition: ReportCondtion) => void;
+  onApplyCondition: (condition: SimpleCondtion) => void;
 }
 
 const HowToUseModal: React.FC<HowToUseModalProps> = ({ open, onClose, onApplyCondition }) => {
-  const handleApplyCondition = (condition: ReportCondtion) => {
+  const handleApplyCondition = (condition: SimpleCondtion) => {
     onApplyCondition(condition);
     onClose();
   };

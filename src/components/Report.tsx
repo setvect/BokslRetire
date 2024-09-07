@@ -1,13 +1,13 @@
+import GetAppIcon from "@mui/icons-material/GetApp";
+import InsertChartIcon from "@mui/icons-material/InsertChart";
 import { Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material";
 import Paper from "@mui/material/Paper";
 import { useEffect, useRef, useState } from "react";
-import { formatNumber } from "../util/Util";
-import AssetChartModal from "./AssetChartModal";
-import { ReportCondtion } from "./ConditionForm";
-import InsertChartIcon from "@mui/icons-material/InsertChart";
-import GetAppIcon from "@mui/icons-material/GetApp";
 import * as XLSX from "xlsx";
 import "../App.css";
+import { ReportCondtion } from "../common/CommonType";
+import { formatNumber } from "../util/Util";
+import AssetChartModal from "./AssetChartModal";
 
 type RetirementCalculatorYear = {
   year: number; // 해당 연도
@@ -65,11 +65,11 @@ function Report({ condition }: ReportProps) {
     const yearData: RetirementCalculatorYear[] = [];
 
     const startAmount = condition.netWorth;
-    const investmentIncome = startAmount > 0 ? (startAmount * condition.targetReturnRate) / 100 : 0;
-    const savingsAmount = condition.expectedRetirementAge === 0 ? 0 : condition.annualSavings;
-    const totalAssets = condition.netWorth + investmentIncome + condition.annualSavings;
+    const investmentIncome = startAmount > 0 ? (startAmount * condition.step[0].targetReturnRate) / 100 : 0;
+    const savingsAmount = condition.step[0].expectedRetirementAge === 0 ? 0 : condition.step[0].annualSavings;
+    const totalAssets = condition.netWorth + investmentIncome + condition.step[0].annualSavings;
     const cumulativeInflationRate = 0;
-    const livingExpenses = condition.expectedRetirementAge === 0 ? condition.retireSpend * 12 : 0;
+    const livingExpenses = condition.step[0].expectedRetirementAge === 0 ? condition.step[0].spend * 12 : 0;
     const remainingAssets = totalAssets - livingExpenses;
     const remainingAssetsPresentValue = remainingAssets / Math.pow(1 + cumulativeInflationRate / 100, 100);
 
@@ -85,29 +85,41 @@ function Report({ condition }: ReportProps) {
       remainingAssetsPresentValue,
     });
 
-    const maxYearCount = Math.min(condition.expectedRetirementAge + 50, 70);
+    const maxYearCount = Math.min(condition.step[0].expectedRetirementAge + 50, 70);
 
+    let stepStartYear = condition.step.map((step) => step.startYear);
+
+    let stepIdx = 0;
     for (let yearIdx = 1; yearIdx <= maxYearCount; yearIdx++) {
       const beforeValue = yearData[yearIdx - 1];
-
+      if (yearIdx === stepStartYear[stepIdx]) {
+        stepIdx++;
+      }
       const startAmount = beforeValue.remainingAssets;
+      const targetReturnRate = condition.step[stepIdx].targetReturnRate;
+      const expectedRetirementAge = condition.step[stepIdx].expectedRetirementAge;
+      const annualSavings = condition.step[stepIdx].annualSavings;
+      const savingsGrowthRate = condition.step[stepIdx].savingsGrowthRate;
+      const annualInflationRate = condition.step[stepIdx].annualInflationRate;
+      const spend = condition.step[stepIdx].spend;
 
       let investmentIncome = 0;
       if (startAmount > 0) {
-        investmentIncome = (startAmount * condition.targetReturnRate) / 100;
+        investmentIncome = (startAmount * targetReturnRate) / 100;
       }
 
       let savingsAmount = 0;
-      if (condition.expectedRetirementAge > yearIdx) {
-        savingsAmount = condition.annualSavings * Math.pow(1 + condition.savingsGrowthRate / 100, yearIdx);
+
+      if (expectedRetirementAge > yearIdx) {
+        savingsAmount = annualSavings * Math.pow(1 + savingsGrowthRate / 100, yearIdx);
       }
       const totalAssets = startAmount + investmentIncome + savingsAmount;
-      const cumulativeInflationRate =
-        ((1 + beforeValue.cumulativeInflationRate / 100) * (1 + condition.annualInflationRate / 100) - 1) * 100;
+
+      const cumulativeInflationRate = ((1 + beforeValue.cumulativeInflationRate / 100) * (1 + annualInflationRate / 100) - 1) * 100;
 
       let livingExpenses = 0;
-      if (condition.expectedRetirementAge <= yearIdx) {
-        livingExpenses = condition.retireSpend * (1 + cumulativeInflationRate / 100) * 12;
+      if (condition.step[0].expectedRetirementAge <= yearIdx) {
+        livingExpenses = spend * (1 + cumulativeInflationRate / 100) * 12;
       }
       const remainingAssets = totalAssets - livingExpenses;
       const remainingAssetsPresentValue = remainingAssets / (1 + cumulativeInflationRate / 100);
@@ -128,16 +140,20 @@ function Report({ condition }: ReportProps) {
   }
 
   const formatCondition = (condition: ReportCondtion): string => {
-    return `
+    if (condition.step.length === 1) {
+      return `
       <strong>조건</strong> -  
       순자산: <span class="condition-value">${formatNumber(condition.netWorth, "0,0")}만원</span>, 
-      저축금액: <span class="condition-value">${formatNumber(condition.annualSavings, "0,0")}만원</span>, 
-      저축 증가율: <span class="condition-value">${condition.savingsGrowthRate}%</span>, 
-      은퇴 시기: <span class="condition-value">${condition.expectedRetirementAge}년후</span>, 
-      은퇴후 월 순지출: <span class="condition-value">${formatNumber(condition.retireSpend, "0,0")}만원</span>,
-      목표 수익률: <span class="condition-value">${condition.targetReturnRate}%</span>, 
-      물가 상승률: <span class="condition-value">${condition.annualInflationRate}%</span>
+      저축금액: <span class="condition-value">${formatNumber(condition.step[0].annualSavings, "0,0")}만원</span>, 
+      저축 증가율: <span class="condition-value">${condition.step[0].savingsGrowthRate}%</span>, 
+      은퇴 시기: <span class="condition-value">${condition.step[0].expectedRetirementAge}년후</span>, 
+      은퇴후 월 순지출: <span class="condition-value">${formatNumber(condition.step[0].spend, "0,0")}만원</span>,
+      목표 수익률: <span class="condition-value">${condition.step[0].targetReturnRate}%</span>, 
+      물가 상승률: <span class="condition-value">${condition.step[0].annualInflationRate}%</span>
     `;
+    } else {
+      return `<strong>복합조건</strong>`;
+    }
   };
 
   const setupStickyHeader = () => {

@@ -3,11 +3,12 @@ import { Box, Container, Tabs, Tab, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import CancelPresentationIcon from "@mui/icons-material/CancelPresentation";
 import Report from "./Report";
-import { ReportCondtion } from "./ConditionForm";
+import { SimpleCondtion } from "./ConditionForm";
 import HowToUse from "./HowToUse";
+import { ReportCondtion } from "../common/CommonType";
 
 interface TabPanelProps {
-  onApplyCondition: (condition: ReportCondtion) => void;
+  onApplyCondition: (condition: SimpleCondtion) => void;
 }
 
 export interface ReportTabHandle {

@@ -10,6 +10,7 @@ import {
   Button,
   FormHelperText,
 } from "@mui/material";
+import { ReportCondtion } from "../common/CommonType";
 
 export type ConditionFormValue = {
   netWorth: string;
@@ -21,7 +22,7 @@ export type ConditionFormValue = {
   retireSpend: string;
 };
 
-export type ReportCondtion = {
+export type SimpleCondtion = {
   netWorth: number; // 순자산
   annualSavings: number; // 한해 저축가능금액
   savingsGrowthRate: number; // 저축 증가률
@@ -36,7 +37,7 @@ type ConditionFormProps = {
 };
 
 export interface ConditionFormHandle {
-  initFomrmValue: (init: ReportCondtion) => void;
+  initFomrmValue: (init: SimpleCondtion) => void;
 }
 
 const ConditionForm = forwardRef<ConditionFormHandle, ConditionFormProps>((props, ref) => {
@@ -65,7 +66,7 @@ const ConditionForm = forwardRef<ConditionFormHandle, ConditionFormProps>((props
   };
 
   useImperativeHandle(ref, () => ({
-    initFomrmValue(init: ReportCondtion) {
+    initFomrmValue(init: SimpleCondtion) {
       setCondition({
         netWorth: formatNumber(init.netWorth.toString()),
         annualSavings: formatNumber(init.annualSavings.toString()),
@@ -113,7 +114,7 @@ const ConditionForm = forwardRef<ConditionFormHandle, ConditionFormProps>((props
       valid = false;
     }
 
-    if (reportCondition.savingsGrowthRate > 50) {
+    if (reportCondition.step[0].savingsGrowthRate > 50) {
       newErrors.savingsGrowthRate = "저축 증가율은 50이하로 입력하세요.";
       valid = false;
     }
@@ -131,7 +132,7 @@ const ConditionForm = forwardRef<ConditionFormHandle, ConditionFormProps>((props
       valid = false;
     }
 
-    if (reportCondition.targetReturnRate > 30) {
+    if (reportCondition.step[0].targetReturnRate > 30) {
       newErrors.targetReturnRate = "목표 수익률은 30이하로 입력하세요.";
       valid = false;
     }
@@ -141,7 +142,7 @@ const ConditionForm = forwardRef<ConditionFormHandle, ConditionFormProps>((props
       valid = false;
     }
 
-    if (reportCondition.annualInflationRate > 20) {
+    if (reportCondition.step[0].annualInflationRate > 20) {
       newErrors.annualInflationRate = "연평균 물가 상승률은 20이하로 입력하세요.";
       valid = false;
     }
@@ -153,14 +154,20 @@ const ConditionForm = forwardRef<ConditionFormHandle, ConditionFormProps>((props
   const convertToReportCondition = (condition: ConditionFormValue): ReportCondtion => {
     return {
       netWorth: parseFloat(condition.netWorth.replace(/,/g, "")),
-      annualSavings: parseFloat(condition.annualSavings.replace(/,/g, "")),
-      savingsGrowthRate: parseFloat(condition.savingsGrowthRate.replace(/,/g, "")),
-      targetReturnRate: parseFloat(condition.targetReturnRate.replace(/,/g, "")),
-      annualInflationRate: parseFloat(condition.annualInflationRate.replace(/,/g, "")),
-      expectedRetirementAge: parseInt(condition.expectedRetirementAge, 10),
-      retireSpend: parseFloat(condition.retireSpend.replace(/,/g, "")),
+      step: [
+        {
+          startYear: new Date().getFullYear(),
+          annualSavings: parseFloat(condition.annualSavings.replace(/,/g, "")),
+          savingsGrowthRate: parseFloat(condition.savingsGrowthRate.replace(/,/g, "")),
+          targetReturnRate: parseFloat(condition.targetReturnRate.replace(/,/g, "")),
+          annualInflationRate: parseFloat(condition.annualInflationRate.replace(/,/g, "")),
+          expectedRetirementAge: parseInt(condition.expectedRetirementAge, 10),
+          spend: parseFloat(condition.retireSpend.replace(/,/g, "")),
+        },
+      ],
     };
   };
+
   const handleFormSubmit = () => {
     if (validateForm()) {
       const reportCondition = convertToReportCondition(condition);

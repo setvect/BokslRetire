@@ -3,9 +3,10 @@ import PetsIcon from "@mui/icons-material/Pets";
 import { AppBar, Box, Button, Container, createTheme, CssBaseline, Link, ThemeProvider, Toolbar, Typography } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
-import ConditionForm, { ConditionFormHandle, ReportCondtion } from "./components/ConditionForm";
+import ConditionForm, { ConditionFormHandle, SimpleCondtion } from "./components/ConditionForm";
 import HowToUseModal from "./components/HowToUseModal";
 import ReportTabPanel, { ReportTabHandle } from "./components/ReportTabPanel";
+import { ReportCondtion } from "./common/CommonType";
 
 const darkTheme = createTheme({
   palette: {
@@ -25,7 +26,6 @@ const darkTheme = createTheme({
 });
 
 function App() {
-  const [condition, setCondition] = useState<ReportCondtion | null>(null);
   const [openHowToUse, setOpenHowToUse] = useState(false);
 
   const handleOpenHowToUse = () => setOpenHowToUse(true);
@@ -35,14 +35,29 @@ function App() {
   const reportTabRef = useRef<ReportTabHandle>(null);
 
   const conditionSubmit = (reportCondition: ReportCondtion) => {
-    setCondition(reportCondition);
     const queryString = conditionToQueryString(reportCondition);
     window.history.replaceState(null, "", `?${queryString}`);
     reportTabRef.current?.addCondtion(reportCondition);
   };
 
-  const applyCondition = (reportCondition: ReportCondtion) => {
-    conditionFormRef.current?.initFomrmValue(reportCondition);
+  const applyCondition = (simpleCondition: SimpleCondtion) => {
+    conditionFormRef.current?.initFomrmValue(simpleCondition);
+
+    const reportCondition: ReportCondtion = {
+      netWorth: simpleCondition.netWorth,
+      step: [
+        {
+          startYear: 0,
+          annualSavings: simpleCondition.annualSavings,
+          savingsGrowthRate: simpleCondition.savingsGrowthRate,
+          targetReturnRate: simpleCondition.targetReturnRate,
+          annualInflationRate: simpleCondition.annualInflationRate,
+          expectedRetirementAge: simpleCondition.expectedRetirementAge,
+          spend: simpleCondition.retireSpend,
+        },
+      ],
+    };
+
     conditionSubmit(reportCondition);
   };
 
@@ -51,12 +66,12 @@ function App() {
     return `q=${encodedCondition}`;
   };
 
-  const queryStringToCondition = (queryString: string): ReportCondtion | null => {
+  const queryStringToCondition = (queryString: string): SimpleCondtion | null => {
     const params = new URLSearchParams(queryString);
     const encodedCondition = params.get("q");
     if (encodedCondition) {
       try {
-        return JSON.parse(decodeURIComponent(encodedCondition)) as ReportCondtion;
+        return JSON.parse(decodeURIComponent(encodedCondition)) as SimpleCondtion;
       } catch (error) {
         console.error("Failed to parse condition from query string:", error);
         return null;
@@ -70,7 +85,6 @@ function App() {
     if (queryString) {
       const parsedCondition = queryStringToCondition(queryString.substring(1));
       if (parsedCondition) {
-        setCondition(parsedCondition);
         conditionFormRef.current?.initFomrmValue(parsedCondition);
       }
     }

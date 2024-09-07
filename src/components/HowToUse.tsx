@@ -1,14 +1,14 @@
 import { Box, Button, Divider, Grid, Link, List, ListItem, Paper, Typography } from "@mui/material";
 import React from "react";
 import mainImage from "../images/about.png";
-import { ReportCondtion } from "./ConditionForm";
+import { SimpleCondtion } from "./ConditionForm";
 
 interface HowToUseProps {
-  onApplyCondition: (condition: ReportCondtion) => void;
+  onApplyCondition: (condition: SimpleCondtion) => void;
 }
 
 const HowToUse: React.FC<HowToUseProps> = ({ onApplyCondition }) => {
-  const applyExample = (condition: ReportCondtion) => {
+  const applyExample = (condition: SimpleCondtion) => {
     onApplyCondition(condition);
   };
 
