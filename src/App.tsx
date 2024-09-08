@@ -7,6 +7,8 @@ import ConditionForm, { ConditionFormHandle, SimpleCondtion } from "./components
 import HowToUseModal from "./components/HowToUseModal";
 import ReportTabPanel, { ReportTabHandle } from "./components/ReportTabPanel";
 import { ReportCondtion } from "./common/CommonType";
+import MultiConditionModal from "./components/MultiConditionModal";
+import { convertSimpleConditionToReportCondition as convertToReportCondition } from "./common/CommonUtil";
 
 const darkTheme = createTheme({
   palette: {
@@ -27,9 +29,12 @@ const darkTheme = createTheme({
 
 function App() {
   const [openHowToUse, setOpenHowToUse] = useState(false);
+  const [openMultiCondition, setOpenMultiCondition] = useState(false);
 
   const handleOpenHowToUse = () => setOpenHowToUse(true);
   const handleCloseHowToUse = () => setOpenHowToUse(false);
+  const handleOpenMultiCondition = () => setOpenMultiCondition(true);
+  const handleCloseMultiCondition = () => setOpenMultiCondition(false);
 
   const conditionFormRef = useRef<ConditionFormHandle>(null);
   const reportTabRef = useRef<ReportTabHandle>(null);
@@ -42,23 +47,12 @@ function App() {
 
   const applyCondition = (simpleCondition: SimpleCondtion) => {
     conditionFormRef.current?.initFomrmValue(simpleCondition);
-
-    const reportCondition: ReportCondtion = {
-      netWorth: simpleCondition.netWorth,
-      step: [
-        {
-          startYear: 0,
-          annualSavings: simpleCondition.annualSavings,
-          savingsGrowthRate: simpleCondition.savingsGrowthRate,
-          targetReturnRate: simpleCondition.targetReturnRate,
-          annualInflationRate: simpleCondition.annualInflationRate,
-          expectedRetirementAge: simpleCondition.expectedRetirementAge,
-          spend: simpleCondition.retireSpend,
-        },
-      ],
-    };
-
+    const reportCondition: ReportCondtion = convertToReportCondition(simpleCondition);
     conditionSubmit(reportCondition);
+  };
+
+  const applyMultiCondition = (multiCondition: ReportCondtion) => {
+    conditionSubmit(multiCondition);
   };
 
   const conditionToQueryString = (condition: ReportCondtion) => {
@@ -104,7 +98,16 @@ function App() {
           <Button onClick={handleOpenHowToUse} startIcon={<HelpOutlineIcon sx={{ margin: "-2px -2px 0 0" }} />} sx={{ marginLeft: "10px" }}>
             사용법 안내
           </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleOpenMultiCondition}
+            sx={{ marginLeft: "auto", padding: "4px 8px", fontSize: "0.8rem" }}
+          >
+            다중 조건
+          </Button>
           <HowToUseModal open={openHowToUse} onClose={handleCloseHowToUse} onApplyCondition={applyCondition} />
+          <MultiConditionModal open={openMultiCondition} onClose={handleCloseMultiCondition} onSubmit={applyMultiCondition} />
         </Toolbar>
       </AppBar>
       <Box sx={{ mt: "55px", display: "flex", flexDirection: "column" }}>

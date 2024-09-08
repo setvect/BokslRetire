@@ -11,6 +11,7 @@ import {
   FormHelperText,
 } from "@mui/material";
 import { ReportCondtion } from "../common/CommonType";
+import { convertSimpleConditionToReportCondition as convertToReportCondition } from "../common/CommonUtil";
 
 export type ConditionFormValue = {
   netWorth: string;
@@ -19,7 +20,7 @@ export type ConditionFormValue = {
   targetReturnRate: string;
   annualInflationRate: string;
   expectedRetirementAge: string;
-  retireSpend: string;
+  spend: string;
 };
 
 export type SimpleCondtion = {
@@ -29,7 +30,7 @@ export type SimpleCondtion = {
   targetReturnRate: number; // 목표 수익률
   annualInflationRate: number; // 연평균 물가상승률
   expectedRetirementAge: number; // 예상 은퇴시기
-  retireSpend: number; // 은퇴후 순지출(현재가치)
+  spend: number; // 은퇴후 순지출(현재가치)
 };
 
 type ConditionFormProps = {
@@ -50,7 +51,7 @@ const ConditionForm = forwardRef<ConditionFormHandle, ConditionFormProps>((props
     targetReturnRate: "",
     annualInflationRate: "",
     expectedRetirementAge: "",
-    retireSpend: "",
+    spend: "",
   });
 
   const handleExpectedRetirementAgeChange = (event: SelectChangeEvent<string>) => {
@@ -74,7 +75,7 @@ const ConditionForm = forwardRef<ConditionFormHandle, ConditionFormProps>((props
         targetReturnRate: formatNumber(init.targetReturnRate.toString()),
         annualInflationRate: formatNumber(init.annualInflationRate.toString()),
         expectedRetirementAge: formatNumber(init.expectedRetirementAge.toString()),
-        retireSpend: formatNumber(init.retireSpend.toString()),
+        spend: formatNumber(init.spend.toString()),
       });
     },
   }));
@@ -99,7 +100,7 @@ const ConditionForm = forwardRef<ConditionFormHandle, ConditionFormProps>((props
     let valid = true;
     const newErrors: Partial<Record<keyof ConditionFormValue, string>> = {};
 
-    const reportCondition = convertToReportCondition(condition);
+    const reportCondition = convertConditionToSimple(condition);
 
     if (!condition.netWorth) {
       newErrors.netWorth = "순자산을 입력하세요.";
@@ -114,7 +115,7 @@ const ConditionForm = forwardRef<ConditionFormHandle, ConditionFormProps>((props
       valid = false;
     }
 
-    if (reportCondition.step[0].savingsGrowthRate > 50) {
+    if (reportCondition.savingsGrowthRate > 50) {
       newErrors.savingsGrowthRate = "저축 증가율은 50이하로 입력하세요.";
       valid = false;
     }
@@ -123,8 +124,8 @@ const ConditionForm = forwardRef<ConditionFormHandle, ConditionFormProps>((props
       newErrors.expectedRetirementAge = "예상(희망) 은퇴 시기를 입력하세요.";
       valid = false;
     }
-    if (!condition.retireSpend) {
-      newErrors.retireSpend = "은퇴후 순지출을 입력하세요.";
+    if (!condition.spend) {
+      newErrors.spend = "은퇴후 순지출을 입력하세요.";
       valid = false;
     }
     if (!condition.targetReturnRate) {
@@ -132,7 +133,7 @@ const ConditionForm = forwardRef<ConditionFormHandle, ConditionFormProps>((props
       valid = false;
     }
 
-    if (reportCondition.step[0].targetReturnRate > 30) {
+    if (reportCondition.targetReturnRate > 30) {
       newErrors.targetReturnRate = "목표 수익률은 30이하로 입력하세요.";
       valid = false;
     }
@@ -142,7 +143,7 @@ const ConditionForm = forwardRef<ConditionFormHandle, ConditionFormProps>((props
       valid = false;
     }
 
-    if (reportCondition.step[0].annualInflationRate > 20) {
+    if (reportCondition.annualInflationRate > 20) {
       newErrors.annualInflationRate = "연평균 물가 상승률은 20이하로 입력하세요.";
       valid = false;
     }
@@ -151,26 +152,22 @@ const ConditionForm = forwardRef<ConditionFormHandle, ConditionFormProps>((props
     return valid;
   };
 
-  const convertToReportCondition = (condition: ConditionFormValue): ReportCondtion => {
+  const convertConditionToSimple = (condition: ConditionFormValue): SimpleCondtion => {
     return {
       netWorth: parseFloat(condition.netWorth.replace(/,/g, "")),
-      step: [
-        {
-          startYear: new Date().getFullYear(),
-          annualSavings: parseFloat(condition.annualSavings.replace(/,/g, "")),
-          savingsGrowthRate: parseFloat(condition.savingsGrowthRate.replace(/,/g, "")),
-          targetReturnRate: parseFloat(condition.targetReturnRate.replace(/,/g, "")),
-          annualInflationRate: parseFloat(condition.annualInflationRate.replace(/,/g, "")),
-          expectedRetirementAge: parseInt(condition.expectedRetirementAge, 10),
-          spend: parseFloat(condition.retireSpend.replace(/,/g, "")),
-        },
-      ],
+      annualSavings: parseFloat(condition.annualSavings.replace(/,/g, "")),
+      savingsGrowthRate: parseFloat(condition.savingsGrowthRate.replace(/,/g, "")),
+      targetReturnRate: parseFloat(condition.targetReturnRate.replace(/,/g, "")),
+      annualInflationRate: parseFloat(condition.annualInflationRate.replace(/,/g, "")),
+      expectedRetirementAge: parseInt(condition.expectedRetirementAge),
+      spend: parseFloat(condition.spend.replace(/,/g, "")),
     };
   };
 
   const handleFormSubmit = () => {
     if (validateForm()) {
-      const reportCondition = convertToReportCondition(condition);
+      const simpleCondition = convertConditionToSimple(condition);
+      const reportCondition = convertToReportCondition(simpleCondition);
       props.onSubmit(reportCondition);
     }
   };
@@ -258,10 +255,10 @@ const ConditionForm = forwardRef<ConditionFormHandle, ConditionFormProps>((props
         label="은퇴후 순지출(현재가치)"
         type="text"
         sx={{ m: 1, flex: 1.3, width: "25ch", input: { textAlign: "right" } }}
-        value={condition.retireSpend}
-        onChange={handleChange("retireSpend", true)}
-        error={!!errors.retireSpend}
-        helperText={errors.retireSpend}
+        value={condition.spend}
+        onChange={handleChange("spend", true)}
+        error={!!errors.spend}
+        helperText={errors.spend}
         InputProps={{
           endAdornment: (
             <InputAdornment position="start" sx={{ marginLeft: "5px" }}>

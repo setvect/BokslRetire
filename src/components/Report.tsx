@@ -66,10 +66,10 @@ function Report({ condition }: ReportProps) {
 
     const startAmount = condition.netWorth;
     const investmentIncome = startAmount > 0 ? (startAmount * condition.step[0].targetReturnRate) / 100 : 0;
-    const savingsAmount = condition.step[0].expectedRetirementAge === 0 ? 0 : condition.step[0].annualSavings;
+    const savingsAmount = condition.step[0].annualSavings;
     const totalAssets = condition.netWorth + investmentIncome + condition.step[0].annualSavings;
     const cumulativeInflationRate = 0;
-    const livingExpenses = condition.step[0].expectedRetirementAge === 0 ? condition.step[0].spend * 12 : 0;
+    const livingExpenses = condition.step[0].spend * 12;
     const remainingAssets = totalAssets - livingExpenses;
     const remainingAssetsPresentValue = remainingAssets / Math.pow(1 + cumulativeInflationRate / 100, 100);
 
@@ -85,19 +85,17 @@ function Report({ condition }: ReportProps) {
       remainingAssetsPresentValue,
     });
 
-    const maxYearCount = Math.min(condition.step[0].expectedRetirementAge + 50, 70);
+    const maxYearCount = 70;
 
     let stepStartYear = condition.step.map((step) => step.startYear);
-
     let stepIdx = 0;
     for (let yearIdx = 1; yearIdx <= maxYearCount; yearIdx++) {
       const beforeValue = yearData[yearIdx - 1];
-      if (yearIdx === stepStartYear[stepIdx]) {
+      if (stepIdx + 1 < condition.step.length && yearIdx === stepStartYear[stepIdx + 1]) {
         stepIdx++;
       }
       const startAmount = beforeValue.remainingAssets;
       const targetReturnRate = condition.step[stepIdx].targetReturnRate;
-      const expectedRetirementAge = condition.step[stepIdx].expectedRetirementAge;
       const annualSavings = condition.step[stepIdx].annualSavings;
       const savingsGrowthRate = condition.step[stepIdx].savingsGrowthRate;
       const annualInflationRate = condition.step[stepIdx].annualInflationRate;
@@ -110,17 +108,13 @@ function Report({ condition }: ReportProps) {
 
       let savingsAmount = 0;
 
-      if (expectedRetirementAge > yearIdx) {
-        savingsAmount = annualSavings * Math.pow(1 + savingsGrowthRate / 100, yearIdx);
-      }
+      savingsAmount = annualSavings * Math.pow(1 + savingsGrowthRate / 100, yearIdx);
       const totalAssets = startAmount + investmentIncome + savingsAmount;
 
       const cumulativeInflationRate = ((1 + beforeValue.cumulativeInflationRate / 100) * (1 + annualInflationRate / 100) - 1) * 100;
 
       let livingExpenses = 0;
-      if (condition.step[0].expectedRetirementAge <= yearIdx) {
-        livingExpenses = spend * (1 + cumulativeInflationRate / 100) * 12;
-      }
+      livingExpenses = spend * (1 + cumulativeInflationRate / 100) * 12;
       const remainingAssets = totalAssets - livingExpenses;
       const remainingAssetsPresentValue = remainingAssets / (1 + cumulativeInflationRate / 100);
 
@@ -140,13 +134,17 @@ function Report({ condition }: ReportProps) {
   }
 
   const formatCondition = (condition: ReportCondtion): string => {
-    if (condition.step.length === 1) {
+    if (condition.type === "single") {
+      let expectedRetirementAge = 0;
+      if (condition.step.length > 1) {
+        expectedRetirementAge = condition.step[1].startYear;
+      }
       return `
       <strong>조건</strong> -  
       순자산: <span class="condition-value">${formatNumber(condition.netWorth, "0,0")}만원</span>, 
       저축금액: <span class="condition-value">${formatNumber(condition.step[0].annualSavings, "0,0")}만원</span>, 
       저축 증가율: <span class="condition-value">${condition.step[0].savingsGrowthRate}%</span>, 
-      은퇴 시기: <span class="condition-value">${condition.step[0].expectedRetirementAge}년후</span>, 
+      은퇴 시기: <span class="condition-value">${expectedRetirementAge}년후</span>, 
       은퇴후 월 순지출: <span class="condition-value">${formatNumber(condition.step[0].spend, "0,0")}만원</span>,
       목표 수익률: <span class="condition-value">${condition.step[0].targetReturnRate}%</span>, 
       물가 상승률: <span class="condition-value">${condition.step[0].annualInflationRate}%</span>

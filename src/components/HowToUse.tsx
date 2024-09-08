@@ -84,7 +84,7 @@ const HowToUse: React.FC<HowToUseProps> = ({ onApplyCondition }) => {
                   targetReturnRate: 7,
                   annualInflationRate: 3.5,
                   expectedRetirementAge: 30,
-                  retireSpend: 500,
+                  spend: 500,
                 })
               }
             >
@@ -111,7 +111,7 @@ const HowToUse: React.FC<HowToUseProps> = ({ onApplyCondition }) => {
                   targetReturnRate: 5,
                   annualInflationRate: 3,
                   expectedRetirementAge: 15,
-                  retireSpend: 250,
+                  spend: 250,
                 })
               }
             >
@@ -138,7 +138,7 @@ const HowToUse: React.FC<HowToUseProps> = ({ onApplyCondition }) => {
                   targetReturnRate: 3.5,
                   annualInflationRate: 3,
                   expectedRetirementAge: 5,
-                  retireSpend: 200,
+                  spend: 200,
                 })
               }
             >
