@@ -1,6 +1,20 @@
 import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
-import { Box, IconButton, Modal, TextField, Button, Grid, InputAdornment, Select, MenuItem, FormControl, InputLabel } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import {
+  Box,
+  IconButton,
+  Modal,
+  TextField,
+  Button,
+  Grid,
+  InputAdornment,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  FormHelperText,
+} from "@mui/material";
 import React, { useState } from "react";
 import { ReportCondtion } from "../common/CommonType";
 
@@ -9,8 +23,8 @@ const MODAL_STYLE = {
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: "95%", // 넓이를 95%로 증가
-  maxWidth: 1400, // 최대 넓이를 1400px로 증가
+  width: "95%",
+  maxWidth: 1400,
   maxHeight: "90vh",
   bgcolor: "background.paper",
   boxShadow: 24,
@@ -24,18 +38,16 @@ interface MultiConditionProps {
   onSubmit: (reportCondition: ReportCondtion) => void;
 }
 
-export type MultiConditionFormValue = {
+type MultiConditionFormValue = {
   netWorth: string;
-  step: MultiStepCondtionForm[];
-};
-
-export type MultiStepCondtionForm = {
-  startYear: string;
-  annualSavings: string;
-  savingsGrowthRate: string;
-  targetReturnRate: string;
-  annualInflationRate: string;
-  spend: string;
+  step: {
+    startYear: string;
+    annualSavings: string;
+    savingsGrowthRate: string;
+    targetReturnRate: string;
+    annualInflationRate: string;
+    spend: string;
+  }[];
 };
 
 const MultiConditionModal: React.FC<MultiConditionProps> = ({ open, onClose, onSubmit }) => {
@@ -53,27 +65,104 @@ const MultiConditionModal: React.FC<MultiConditionProps> = ({ open, onClose, onS
     ],
   });
 
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
   const formatNumber = (value: string) => {
     return value.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
 
+  const validateField = (field: string, value: string, index?: number) => {
+    let error = "";
+    const numValue = parseFloat(value);
+
+    switch (field) {
+      case "netWorth":
+        if (!value) error = "순자산을 입력하세요.";
+        break;
+      case "startYear":
+        if (!value) error = "시작 년도를 선택하세요.";
+        break;
+      case "annualSavings":
+        if (!value) error = "저축가능금액을 입력하세요.";
+        break;
+      case "savingsGrowthRate":
+        if (!value) error = "저축 증가률을 입력하세요.";
+        else if (numValue > 50) error = "저축 증가율은 50이하로 입력하세요.";
+        break;
+      case "targetReturnRate":
+        if (!value) error = "목표 수익률을 입력하세요.";
+        else if (numValue > 30) error = "목표 수익률은 30이하로 입력하세요.";
+        break;
+      case "annualInflationRate":
+        if (!value) error = "물가상승률을 입력하세요.";
+        else if (numValue > 20) error = "물가상승률은 20이하로 입력하세요.";
+        break;
+      case "spend":
+        if (!value) error = "순지출을 입력하세요.";
+        break;
+    }
+
+    return error;
+  };
+
   const handleInputChange =
-    (field: keyof MultiStepCondtionForm, index: number, removeDecimal = false) =>
+    (field: keyof MultiConditionFormValue["step"][0], index: number, removeDecimal = false) =>
     (event: React.ChangeEvent<HTMLInputElement>) => {
       let value = event.target.value.replace(/,/g, "");
       if (removeDecimal) {
         value = value.replace(/\./g, "");
       }
-      if (value === "" || !isNaN(Number(value))) {
+      if (value === "-" || !isNaN(Number(value))) {
         const newStep = [...multiCondition.step];
-        newStep[index] = { ...newStep[index], [field]: removeDecimal ? formatNumber(value) : value };
+        newStep[index] = { ...newStep[index], [field]: formatNumber(value) };
         setMultiCondition({ ...multiCondition, step: newStep });
+
+        // Validate the changed field
+        const error = validateField(field, value, index);
+        setErrors((prev) => ({
+          ...prev,
+          [`step.${index}.${field}`]: error,
+        }));
       }
     };
 
+  const handleNetWorthChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value.replace(/,/g, "").replace(/\./g, "");
+    if (value === "-" || !isNaN(Number(value))) {
+      setMultiCondition({ ...multiCondition, netWorth: formatNumber(value) });
+
+      // Validate netWorth
+      const error = validateField("netWorth", value);
+      setErrors((prev) => ({
+        ...prev,
+        netWorth: error,
+      }));
+    }
+  };
+
   const handleFormSubmit = () => {
-    const reportCondition = convertToReportCondition(multiCondition);
-    onSubmit(reportCondition);
+    if (validateForm()) {
+      const reportCondition = convertToReportCondition(multiCondition);
+      onSubmit(reportCondition);
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    newErrors["netWorth"] = validateField("netWorth", multiCondition.netWorth);
+
+    multiCondition.step.forEach((step, index) => {
+      Object.keys(step).forEach((field) => {
+        const error = validateField(field, step[field as keyof typeof step], index);
+        if (error) {
+          newErrors[`step.${index}.${field}`] = error;
+        }
+      });
+    });
+
+    setErrors(newErrors);
+    return Object.values(newErrors).every((error) => !error);
   };
 
   const convertToReportCondition = (condition: MultiConditionFormValue): ReportCondtion => {
@@ -92,20 +181,27 @@ const MultiConditionModal: React.FC<MultiConditionProps> = ({ open, onClose, onS
   };
 
   const addNewStep = () => {
-    setMultiCondition({
-      ...multiCondition,
-      step: [
-        ...multiCondition.step,
-        {
-          startYear: "",
-          annualSavings: "",
-          savingsGrowthRate: "",
-          targetReturnRate: "",
-          annualInflationRate: "",
-          spend: "",
-        },
-      ],
-    });
+    if (multiCondition.step.length < 5) {
+      setMultiCondition({
+        ...multiCondition,
+        step: [
+          ...multiCondition.step,
+          {
+            startYear: "",
+            annualSavings: "",
+            savingsGrowthRate: "",
+            targetReturnRate: "",
+            annualInflationRate: "",
+            spend: "",
+          },
+        ],
+      });
+    }
+  };
+
+  const removeStep = (index: number) => {
+    const newStep = multiCondition.step.filter((_, i) => i !== index);
+    setMultiCondition({ ...multiCondition, step: newStep });
   };
 
   const yearOptions = Array.from({ length: 51 }, (_, i) => i);
@@ -125,23 +221,29 @@ const MultiConditionModal: React.FC<MultiConditionProps> = ({ open, onClose, onS
           <CloseIcon />
         </IconButton>
 
-        <TextField
-          label="순자산"
-          type="text"
-          value={multiCondition.netWorth}
-          onChange={(e) => setMultiCondition({ ...multiCondition, netWorth: formatNumber(e.target.value.replace(/,/g, "")) })}
-          fullWidth
-          margin="normal"
-          InputProps={{
-            endAdornment: <InputAdornment position="end">만원</InputAdornment>,
-            inputProps: { style: { textAlign: "right" }, maxLength: 7 },
-          }}
-        />
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={2}>
+            <TextField
+              label="순자산"
+              type="text"
+              value={multiCondition.netWorth}
+              onChange={handleNetWorthChange}
+              fullWidth
+              margin="normal"
+              error={!!errors["netWorth"]}
+              helperText={errors["netWorth"]}
+              InputProps={{
+                endAdornment: <InputAdornment position="end">만원</InputAdornment>,
+                inputProps: { style: { textAlign: "right" }, maxLength: 7 },
+              }}
+            />
+          </Grid>
+        </Grid>
 
         {multiCondition.step.map((step, index) => (
           <Grid container spacing={2} key={index} alignItems="center">
-            <Grid item xs={1.5}>
-              <FormControl fullWidth margin="dense">
+            <Grid item xs={2}>
+              <FormControl fullWidth margin="dense" error={!!errors[`step.${index}.startYear`]}>
                 <InputLabel>시작 년도</InputLabel>
                 <Select
                   value={step.startYear}
@@ -154,9 +256,10 @@ const MultiConditionModal: React.FC<MultiConditionProps> = ({ open, onClose, onS
                     </MenuItem>
                   ))}
                 </Select>
+                {errors[`step.${index}.startYear`] && <FormHelperText>{errors[`step.${index}.startYear`]}</FormHelperText>}
               </FormControl>
             </Grid>
-            <Grid item xs={1.5}>
+            <Grid item xs={11 / 6}>
               <TextField
                 label="저축가능금액"
                 type="text"
@@ -164,13 +267,15 @@ const MultiConditionModal: React.FC<MultiConditionProps> = ({ open, onClose, onS
                 onChange={handleInputChange("annualSavings", index, true)}
                 fullWidth
                 margin="dense"
+                error={!!errors[`step.${index}.annualSavings`]}
+                helperText={errors[`step.${index}.annualSavings`]}
                 InputProps={{
                   endAdornment: <InputAdornment position="end">만원</InputAdornment>,
                   inputProps: { style: { textAlign: "right" }, maxLength: 7 },
                 }}
               />
             </Grid>
-            <Grid item xs={1.5}>
+            <Grid item xs={11 / 6}>
               <TextField
                 label="저축 증가률"
                 type="text"
@@ -178,13 +283,15 @@ const MultiConditionModal: React.FC<MultiConditionProps> = ({ open, onClose, onS
                 onChange={handleInputChange("savingsGrowthRate", index)}
                 fullWidth
                 margin="dense"
+                error={!!errors[`step.${index}.savingsGrowthRate`]}
+                helperText={errors[`step.${index}.savingsGrowthRate`]}
                 InputProps={{
                   endAdornment: <InputAdornment position="end">%</InputAdornment>,
                   inputProps: { style: { textAlign: "right" }, maxLength: 5 },
                 }}
               />
             </Grid>
-            <Grid item xs={1.5}>
+            <Grid item xs={11 / 6}>
               <TextField
                 label="목표 수익률"
                 type="text"
@@ -192,13 +299,15 @@ const MultiConditionModal: React.FC<MultiConditionProps> = ({ open, onClose, onS
                 onChange={handleInputChange("targetReturnRate", index)}
                 fullWidth
                 margin="dense"
+                error={!!errors[`step.${index}.targetReturnRate`]}
+                helperText={errors[`step.${index}.targetReturnRate`]}
                 InputProps={{
                   endAdornment: <InputAdornment position="end">%</InputAdornment>,
                   inputProps: { style: { textAlign: "right" }, maxLength: 5 },
                 }}
               />
             </Grid>
-            <Grid item xs={1.5}>
+            <Grid item xs={11 / 6}>
               <TextField
                 label="물가상승률"
                 type="text"
@@ -206,30 +315,41 @@ const MultiConditionModal: React.FC<MultiConditionProps> = ({ open, onClose, onS
                 onChange={handleInputChange("annualInflationRate", index)}
                 fullWidth
                 margin="dense"
+                error={!!errors[`step.${index}.annualInflationRate`]}
+                helperText={errors[`step.${index}.annualInflationRate`]}
                 InputProps={{
                   endAdornment: <InputAdornment position="end">%</InputAdornment>,
                   inputProps: { style: { textAlign: "right" }, maxLength: 5 },
                 }}
               />
             </Grid>
-            <Grid item xs={1.5}>
+            <Grid item xs={11 / 6}>
               <TextField
-                label="순지출"
+                label="월 순지출"
                 type="text"
                 value={step.spend}
                 onChange={handleInputChange("spend", index, true)}
                 fullWidth
                 margin="dense"
+                error={!!errors[`step.${index}.spend`]}
+                helperText={errors[`step.${index}.spend`]}
                 InputProps={{
                   endAdornment: <InputAdornment position="end">만원</InputAdornment>,
                   inputProps: { style: { textAlign: "right" }, maxLength: 7 },
                 }}
               />
             </Grid>
+            <Grid item xs={0.8} container justifyContent="center" alignItems="center">
+              {index !== 0 && (
+                <IconButton onClick={() => removeStep(index)}>
+                  <DeleteIcon />
+                </IconButton>
+              )}
+            </Grid>
           </Grid>
         ))}
 
-        <Button startIcon={<AddIcon />} onClick={addNewStep} sx={{ mt: 2 }}>
+        <Button startIcon={<AddIcon />} onClick={addNewStep} sx={{ mt: 2 }} disabled={multiCondition.step.length >= 5}>
           새로운 단계 추가
         </Button>
 
