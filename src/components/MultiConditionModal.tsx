@@ -14,9 +14,13 @@ import {
   FormControl,
   InputLabel,
   FormHelperText,
+  Typography,
+  Paper,
+  useTheme,
 } from "@mui/material";
 import React, { useState } from "react";
 import { ReportCondtion } from "../common/CommonType";
+import { SelectChangeEvent } from "@mui/material/Select";
 
 const MODAL_STYLE = {
   position: "absolute" as "absolute",
@@ -24,6 +28,7 @@ const MODAL_STYLE = {
   left: "50%",
   transform: "translate(-50%, -50%)",
   width: "95%",
+  height: 800,
   maxWidth: 1400,
   maxHeight: "90vh",
   bgcolor: "background.paper",
@@ -51,11 +56,12 @@ type MultiConditionFormValue = {
 };
 
 const MultiConditionModal: React.FC<MultiConditionProps> = ({ open, onClose, onSubmit }) => {
+  const theme = useTheme();
   const [multiCondition, setMultiCondition] = useState<MultiConditionFormValue>({
     netWorth: "",
     step: [
       {
-        startYear: "",
+        startYear: "0",
         annualSavings: "",
         savingsGrowthRate: "",
         targetReturnRate: "",
@@ -81,6 +87,13 @@ const MultiConditionModal: React.FC<MultiConditionProps> = ({ open, onClose, onS
         break;
       case "startYear":
         if (!value) error = "시작 년도를 선택하세요.";
+        if (index !== undefined && index > 0) {
+          const prevYear = parseInt(multiCondition.step[index - 1].startYear);
+          const currentYear = parseInt(value);
+          if (currentYear <= prevYear) {
+            error = `${prevYear + 1}년 이후를 선택하세요.`;
+          }
+        }
         break;
       case "annualSavings":
         if (!value) error = "저축가능금액을 입력하세요.";
@@ -144,6 +157,7 @@ const MultiConditionModal: React.FC<MultiConditionProps> = ({ open, onClose, onS
     if (validateForm()) {
       const reportCondition = convertToReportCondition(multiCondition);
       onSubmit(reportCondition);
+      onClose();
     }
   };
 
@@ -182,12 +196,13 @@ const MultiConditionModal: React.FC<MultiConditionProps> = ({ open, onClose, onS
 
   const addNewStep = () => {
     if (multiCondition.step.length < 5) {
+      const lastYear = parseInt(multiCondition.step[multiCondition.step.length - 1].startYear);
       setMultiCondition({
         ...multiCondition,
         step: [
           ...multiCondition.step,
           {
-            startYear: "",
+            startYear: (lastYear + 1).toString(),
             annualSavings: "",
             savingsGrowthRate: "",
             targetReturnRate: "",
@@ -204,22 +219,61 @@ const MultiConditionModal: React.FC<MultiConditionProps> = ({ open, onClose, onS
     setMultiCondition({ ...multiCondition, step: newStep });
   };
 
-  const yearOptions = Array.from({ length: 51 }, (_, i) => i);
+  const getYearOptions = (index: number) => {
+    if (index === 0) {
+      return [{ value: "0", label: "현재" }];
+    } else {
+      const prevYear = parseInt(multiCondition.step[index - 1].startYear);
+      return Array.from({ length: 50 - prevYear }, (_, i) => i + prevYear + 1).map((year) => ({
+        value: year.toString(),
+        label: `+${year}년`,
+      }));
+    }
+  };
+
+  const handleStartYearChange = (index: number) => (event: SelectChangeEvent<string>) => {
+    const value = event.target.value;
+    const newStep = [...multiCondition.step];
+    newStep[index] = { ...newStep[index], startYear: value };
+    setMultiCondition({ ...multiCondition, step: newStep });
+
+    // Validate the changed field
+    const error = validateField("startYear", value, index);
+    setErrors((prev) => ({
+      ...prev,
+      [`step.${index}.startYear`]: error,
+    }));
+  };
 
   return (
     <Modal open={open} onClose={onClose} aria-labelledby="modal-title" aria-describedby="modal-description">
-      <Box sx={MODAL_STYLE}>
+      <Box
+        sx={{
+          ...MODAL_STYLE,
+          bgcolor: theme.palette.background.paper,
+          color: theme.palette.text.primary,
+        }}
+      >
         <IconButton
           onClick={onClose}
           sx={{
             position: "absolute",
             right: 8,
             top: 8,
-            color: (theme) => theme.palette.grey[500],
+            color: theme.palette.text.secondary,
           }}
         >
           <CloseIcon />
         </IconButton>
+
+        <Paper elevation={0} sx={{ p: 2, mb: 3, bgcolor: theme.palette.background.default }}>
+          <Typography variant="h6" gutterBottom color="text.primary">
+            다단계 조건 입력 방법
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            순자산 입력 → 현재 계획 입력 → 변화 필요 시 "새로운 단계 추가" → 변경 값만 입력 → 완료 후 "결과보기" 클릭 (최대 5단계)
+          </Typography>
+        </Paper>
 
         <Grid container spacing={2} alignItems="center">
           <Grid item xs={2}>
@@ -245,14 +299,10 @@ const MultiConditionModal: React.FC<MultiConditionProps> = ({ open, onClose, onS
             <Grid item xs={2}>
               <FormControl fullWidth margin="dense" error={!!errors[`step.${index}.startYear`]}>
                 <InputLabel>시작 년도</InputLabel>
-                <Select
-                  value={step.startYear}
-                  onChange={(e) => handleInputChange("startYear", index)(e as React.ChangeEvent<HTMLInputElement>)}
-                  label="시작 년도"
-                >
-                  {yearOptions.map((year) => (
-                    <MenuItem key={year} value={year.toString()}>
-                      {year === 0 ? "현재" : `+${year}년`}
+                <Select value={step.startYear} onChange={handleStartYearChange(index)} label="시작 년도" disabled={index === 0}>
+                  {getYearOptions(index).map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
                     </MenuItem>
                   ))}
                 </Select>
@@ -349,7 +399,12 @@ const MultiConditionModal: React.FC<MultiConditionProps> = ({ open, onClose, onS
           </Grid>
         ))}
 
-        <Button startIcon={<AddIcon />} onClick={addNewStep} sx={{ mt: 2 }} disabled={multiCondition.step.length >= 5}>
+        <Button
+          startIcon={<AddIcon />}
+          onClick={addNewStep}
+          sx={{ mt: 2, color: theme.palette.text.primary }}
+          disabled={multiCondition.step.length >= 5}
+        >
           새로운 단계 추가
         </Button>
 
