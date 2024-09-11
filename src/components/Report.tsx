@@ -8,6 +8,7 @@ import "../App.css";
 import { ReportCondtion } from "../common/CommonType";
 import { formatNumber } from "../util/Util";
 import AssetChartModal from "./AssetChartModal";
+import { convertSimpleCondition } from "../common/CommonUtil";
 
 type RetirementCalculatorYear = {
   year: number; // 해당 연도
@@ -135,22 +136,19 @@ function Report({ condition }: ReportProps) {
 
   const formatCondition = (condition: ReportCondtion): string => {
     if (condition.type === "single") {
-      let expectedRetirementAge = 0;
-      if (condition.step.length > 1) {
-        expectedRetirementAge = condition.step[1].startYear;
-      }
+      const simpleCondition = convertSimpleCondition(condition);
       return `
       <strong>조건</strong> -  
-      순자산: <span class="condition-value">${formatNumber(condition.netWorth, "0,0")}만원</span>, 
-      저축금액: <span class="condition-value">${formatNumber(condition.step[0].annualSavings, "0,0")}만원</span>, 
-      저축 증가율: <span class="condition-value">${condition.step[0].savingsGrowthRate}%</span>, 
-      은퇴 시기: <span class="condition-value">${expectedRetirementAge}년후</span>, 
-      은퇴후 월 순지출: <span class="condition-value">${formatNumber(condition.step[0].spend, "0,0")}만원</span>,
-      목표 수익률: <span class="condition-value">${condition.step[0].targetReturnRate}%</span>, 
-      물가 상승률: <span class="condition-value">${condition.step[0].annualInflationRate}%</span>
+      순자산: <span class="condition-value">${formatNumber(simpleCondition.netWorth, "0,0")}만원</span>, 
+      저축금액: <span class="condition-value">${formatNumber(simpleCondition.annualSavings, "0,0")}만원</span>, 
+      저축 증가율: <span class="condition-value">${simpleCondition.savingsGrowthRate}%</span>, 
+      은퇴 시기: <span class="condition-value">${simpleCondition.expectedRetirementAge}년후</span>, 
+      은퇴후 월 순지출: <span class="condition-value">${formatNumber(simpleCondition.spend, "0,0")}만원</span>,
+      목표 수익률: <span class="condition-value">${simpleCondition.targetReturnRate}%</span>, 
+      물가 상승률: <span class="condition-value">${simpleCondition.annualInflationRate}%</span>
     `;
     } else {
-      return `<strong>복합조건</strong>`;
+      return `<strong>다중 조건</strong>`;
     }
   };
 

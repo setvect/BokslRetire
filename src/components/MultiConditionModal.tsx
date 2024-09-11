@@ -96,7 +96,7 @@ const MultiConditionModal: React.FC<MultiConditionProps> = ({ open, onClose, onS
         }
         break;
       case "annualSavings":
-        if (!value) error = "저축가능금액을 입력하세요.";
+        if (!value) error = "한해 저축금액을 입력하세요.";
         break;
       case "savingsGrowthRate":
         if (!value) error = "저축 증가률을 입력하세요.";
@@ -311,7 +311,7 @@ const MultiConditionModal: React.FC<MultiConditionProps> = ({ open, onClose, onS
             </Grid>
             <Grid item xs={11 / 6}>
               <TextField
-                label="저축가능금액"
+                label="한해 저축금액"
                 type="text"
                 value={step.annualSavings}
                 onChange={handleInputChange("annualSavings", index, true)}

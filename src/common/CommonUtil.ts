@@ -31,3 +31,20 @@ export function convertSimpleConditionToReportCondition(simpleCondition: SimpleC
     step: stepList,
   } as ReportCondtion;
 }
+
+export function convertSimpleCondition(parsedCondition: ReportCondtion) {
+  let expectedRetirementAge = 0;
+  if (parsedCondition.step.length > 1) {
+    expectedRetirementAge = parsedCondition.step[1].startYear;
+  }
+  const simpleCondition: SimpleCondtion = {
+    netWorth: parsedCondition.netWorth,
+    annualSavings: parsedCondition.step[0].annualSavings,
+    savingsGrowthRate: parsedCondition.step[0].savingsGrowthRate,
+    targetReturnRate: parsedCondition.step[0].targetReturnRate,
+    annualInflationRate: parsedCondition.step[0].annualInflationRate,
+    expectedRetirementAge: expectedRetirementAge,
+    spend: parsedCondition.step[0].spend,
+  };
+  return simpleCondition;
+}
