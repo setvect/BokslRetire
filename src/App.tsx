@@ -75,6 +75,7 @@ function App() {
   };
 
   useEffect(() => {
+    console.log("호출됨!!!!!!");
     const queryString = window.location.search;
     if (queryString) {
       const parsedCondition = queryStringToCondition(queryString.substring(1));
