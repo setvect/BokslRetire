@@ -1,14 +1,14 @@
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import PetsIcon from "@mui/icons-material/Pets";
 import { AppBar, Box, Button, Container, createTheme, CssBaseline, Link, ThemeProvider, Toolbar, Typography } from "@mui/material";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import "./App.css";
 import ConditionForm, { ConditionFormHandle, SimpleCondtion } from "./components/ConditionForm";
 import HowToUseModal from "./components/HowToUseModal";
 import ReportTabPanel, { ReportTabHandle } from "./components/ReportTabPanel";
 import { ReportCondtion } from "./common/CommonType";
 import MultiConditionModal from "./components/MultiConditionModal";
-import { convertSimpleConditionToReportCondition as convertToReportCondition } from "./common/CommonUtil";
+import { convertSimpleCondition, convertSimpleConditionToReportCondition as convertToReportCondition } from "./common/CommonUtil";
 
 const darkTheme = createTheme({
   palette: {
@@ -39,11 +39,11 @@ function App() {
   const conditionFormRef = useRef<ConditionFormHandle>(null);
   const reportTabRef = useRef<ReportTabHandle>(null);
 
-  const conditionSubmit = (reportCondition: ReportCondtion) => {
+  const conditionSubmit = useCallback((reportCondition: ReportCondtion) => {
     const queryString = conditionToQueryString(reportCondition);
     window.history.replaceState(null, "", `?${queryString}`);
     reportTabRef.current?.addCondtion(reportCondition);
-  };
+  }, []);
 
   const applyCondition = (simpleCondition: SimpleCondtion) => {
     conditionFormRef.current?.initFomrmValue(simpleCondition);
@@ -60,12 +60,12 @@ function App() {
     return `q=${encodedCondition}`;
   };
 
-  const queryStringToCondition = (queryString: string): SimpleCondtion | null => {
+  const queryStringToCondition = (queryString: string): ReportCondtion | null => {
     const params = new URLSearchParams(queryString);
     const encodedCondition = params.get("q");
     if (encodedCondition) {
       try {
-        return JSON.parse(decodeURIComponent(encodedCondition)) as SimpleCondtion;
+        return JSON.parse(decodeURIComponent(encodedCondition)) as ReportCondtion;
       } catch (error) {
         console.error("Failed to parse condition from query string:", error);
         return null;
@@ -78,11 +78,16 @@ function App() {
     const queryString = window.location.search;
     if (queryString) {
       const parsedCondition = queryStringToCondition(queryString.substring(1));
-      if (parsedCondition) {
-        conditionFormRef.current?.initFomrmValue(parsedCondition);
+      if (!parsedCondition) {
+        return;
       }
+      if (parsedCondition.type === "single") {
+        const simpleCondition = convertSimpleCondition(parsedCondition);
+        conditionFormRef.current?.initFomrmValue(simpleCondition);
+      }
+      conditionSubmit(parsedCondition);
     }
-  }, []);
+  }, [conditionSubmit]);
 
   return (
     <ThemeProvider theme={darkTheme}>
