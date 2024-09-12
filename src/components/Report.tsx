@@ -22,6 +22,7 @@ import { formatNumber } from "../util/Util";
 import AssetChartModal from "./AssetChartModal";
 import { convertSimpleCondition } from "../common/CommonUtil";
 import MultiConditionModal from "./MultiConditionModal";
+import { useAppContext } from "../context/AppContext";
 
 type RetirementCalculatorYear = {
   year: number; // 해당 연도
@@ -37,10 +38,15 @@ type RetirementCalculatorYear = {
 
 interface ReportProps {
   condition: ReportCondtion | null;
-  onApplyMultiCondition: (condition: ReportCondtion) => void;
 }
 
-function Report({ condition, onApplyMultiCondition }: ReportProps) {
+function Report({ condition }: ReportProps) {
+  const { dispatch } = useAppContext();
+
+  const handleApplyMultiCondition = (multiCondition: ReportCondtion) => {
+    dispatch({ type: "APPLY_MULTI_CONDITION", payload: multiCondition });
+  };
+
   const [retirementCalculatorYearList, setRetirementCalculatorYearList] = useState<RetirementCalculatorYear[]>([]);
   const [isOpenChart, setIsOpenChart] = useState(false);
   const [isOpenMultiConditionModal, setIsOpenMultiConditionModal] = useState(false);
@@ -347,7 +353,7 @@ function Report({ condition, onApplyMultiCondition }: ReportProps) {
         open={isOpenMultiConditionModal}
         onClose={handleCloseMultiConditionModal}
         onSubmit={(newCondition) => {
-          onApplyMultiCondition(newCondition);
+          handleApplyMultiCondition(newCondition);
           handleCloseMultiConditionModal();
         }}
         initialCondition={condition}

@@ -1,14 +1,15 @@
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import PetsIcon from "@mui/icons-material/Pets";
 import { AppBar, Box, Button, Container, createTheme, CssBaseline, Link, ThemeProvider, Toolbar, Typography } from "@mui/material";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import "./App.css";
+import { ReportCondtion } from "./common/CommonType";
+import { convertSimpleCondition, convertSimpleConditionToReportCondition as convertToReportCondition } from "./common/CommonUtil";
 import ConditionForm, { ConditionFormHandle, SimpleCondtion } from "./components/ConditionForm";
 import HowToUseModal from "./components/HowToUseModal";
-import ReportTabPanel, { ReportTabHandle } from "./components/ReportTabPanel";
-import { ReportCondtion } from "./common/CommonType";
 import MultiConditionModal from "./components/MultiConditionModal";
-import { convertSimpleCondition, convertSimpleConditionToReportCondition as convertToReportCondition } from "./common/CommonUtil";
+import ReportTabPanel, { ReportTabHandle } from "./components/ReportTabPanel";
+import { useAppContext } from "./context/AppContext";
 
 const darkTheme = createTheme({
   palette: {
@@ -28,6 +29,20 @@ const darkTheme = createTheme({
 });
 
 function App() {
+  const { state } = useAppContext();
+
+  const conditionSubmit = useCallback((reportCondition: ReportCondtion) => {
+    const queryString = conditionToQueryString(reportCondition);
+    window.history.replaceState(null, "", `?${queryString}`);
+    reportTabRef.current?.addCondtion(reportCondition);
+  }, []);
+
+  useEffect(() => {
+    if (state.multiCondition) {
+      conditionSubmit(state.multiCondition);
+    }
+  }, [state.multiCondition, conditionSubmit]);
+
   const [openHowToUse, setOpenHowToUse] = useState(false);
   const [openMultiCondition, setOpenMultiCondition] = useState(false);
 
@@ -38,12 +53,6 @@ function App() {
 
   const conditionFormRef = useRef<ConditionFormHandle>(null);
   const reportTabRef = useRef<ReportTabHandle>(null);
-
-  const conditionSubmit = useCallback((reportCondition: ReportCondtion) => {
-    const queryString = conditionToQueryString(reportCondition);
-    window.history.replaceState(null, "", `?${queryString}`);
-    reportTabRef.current?.addCondtion(reportCondition);
-  }, []);
 
   const applyCondition = (simpleCondition: SimpleCondtion) => {
     conditionFormRef.current?.initFomrmValue(simpleCondition);
@@ -75,7 +84,6 @@ function App() {
   };
 
   useEffect(() => {
-    console.log("호출됨!!!!!!");
     const queryString = window.location.search;
     if (queryString) {
       const parsedCondition = queryStringToCondition(queryString.substring(1));
@@ -125,7 +133,7 @@ function App() {
         <Container maxWidth={false} sx={{ flex: "0 0 auto" }}>
           <ConditionForm ref={conditionFormRef} onSubmit={conditionSubmit} />
         </Container>
-        <ReportTabPanel ref={reportTabRef} onApplyCondition={applyCondition} onApplyMultiCondition={applyMultiCondition} />
+        <ReportTabPanel ref={reportTabRef} onApplyCondition={applyCondition} />
       </Box>
     </ThemeProvider>
   );
