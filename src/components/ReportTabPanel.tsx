@@ -9,6 +9,7 @@ import { ReportCondtion } from "../common/CommonType";
 
 interface TabPanelProps {
   onApplyCondition: (condition: SimpleCondtion) => void;
+  onApplyMultiCondition: (condition: ReportCondtion) => void;
 }
 
 export interface ReportTabHandle {
@@ -69,7 +70,7 @@ const ReportTabPanel = forwardRef<ReportTabHandle, TabPanelProps>((props, ref) =
         </Box>
         {tabs.map((tab, index) => (
           <Box key={index} role="tabpanel" hidden={activeTab !== index}>
-            {activeTab === index && <Report condition={tab.condition} />}
+            {activeTab === index && <Report condition={tab.condition} onApplyMultiCondition={props.onApplyMultiCondition} />}
           </Box>
         ))}
 

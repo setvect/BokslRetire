@@ -18,7 +18,7 @@ import {
   Paper,
   useTheme,
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ReportCondtion } from "../common/CommonType";
 import { SelectChangeEvent } from "@mui/material/Select";
 
@@ -41,6 +41,7 @@ interface MultiConditionProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (reportCondition: ReportCondtion) => void;
+  initialCondition: ReportCondtion | null;
 }
 
 type MultiConditionFormValue = {
@@ -55,7 +56,7 @@ type MultiConditionFormValue = {
   }[];
 };
 
-const MultiConditionModal: React.FC<MultiConditionProps> = ({ open, onClose, onSubmit }) => {
+const MultiConditionModal: React.FC<MultiConditionProps> = ({ open, onClose, onSubmit, initialCondition }) => {
   const theme = useTheme();
   const [multiCondition, setMultiCondition] = useState<MultiConditionFormValue>({
     netWorth: "",
@@ -70,6 +71,26 @@ const MultiConditionModal: React.FC<MultiConditionProps> = ({ open, onClose, onS
       },
     ],
   });
+
+  const convertReportConditionToFormValue = (condition: ReportCondtion): MultiConditionFormValue => {
+    return {
+      netWorth: condition.netWorth.toString(),
+      step: condition.step.map((step) => ({
+        startYear: step.startYear.toString(),
+        annualSavings: step.annualSavings.toString(),
+        savingsGrowthRate: step.savingsGrowthRate.toString(),
+        targetReturnRate: step.targetReturnRate.toString(),
+        annualInflationRate: step.annualInflationRate.toString(),
+        spend: step.spend.toString(),
+      })),
+    };
+  };
+
+  useEffect(() => {
+    if (initialCondition) {
+      setMultiCondition(convertReportConditionToFormValue(initialCondition));
+    }
+  }, [initialCondition]);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 

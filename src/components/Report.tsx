@@ -1,14 +1,27 @@
 import GetAppIcon from "@mui/icons-material/GetApp";
 import InsertChartIcon from "@mui/icons-material/InsertChart";
-import { Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material";
+import {
+  Button,
+  styled,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Tooltip,
+  TooltipProps,
+  Typography,
+} from "@mui/material";
 import Paper from "@mui/material/Paper";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import * as XLSX from "xlsx";
 import "../App.css";
 import { ReportCondtion } from "../common/CommonType";
 import { formatNumber } from "../util/Util";
 import AssetChartModal from "./AssetChartModal";
 import { convertSimpleCondition } from "../common/CommonUtil";
+import MultiConditionModal from "./MultiConditionModal";
 
 type RetirementCalculatorYear = {
   year: number; // 해당 연도
@@ -24,14 +37,24 @@ type RetirementCalculatorYear = {
 
 interface ReportProps {
   condition: ReportCondtion | null;
+  onApplyMultiCondition: (condition: ReportCondtion) => void;
 }
 
-function Report({ condition }: ReportProps) {
+function Report({ condition, onApplyMultiCondition }: ReportProps) {
   const [retirementCalculatorYearList, setRetirementCalculatorYearList] = useState<RetirementCalculatorYear[]>([]);
   const [isOpenChart, setIsOpenChart] = useState(false);
+  const [isOpenMultiConditionModal, setIsOpenMultiConditionModal] = useState(false);
   const tableRef = useRef<HTMLTableElement | null>(null);
   const headerRef = useRef<HTMLTableSectionElement | null>(null);
   const stickyHeaderRef = useRef<HTMLTableSectionElement | null>(null);
+
+  const handleOpenMultiConditionModal = () => {
+    setIsOpenMultiConditionModal(true);
+  };
+
+  const handleCloseMultiConditionModal = () => {
+    setIsOpenMultiConditionModal(false);
+  };
 
   const getBackgroundColor = (index: number) => {
     const group = Math.floor((index - 1) / 5);
@@ -134,21 +157,47 @@ function Report({ condition }: ReportProps) {
     setRetirementCalculatorYearList(yearData);
   }
 
-  const formatCondition = (condition: ReportCondtion): string => {
+  const LargeTooltip = styled(({ className, ...props }: TooltipProps) => <Tooltip {...props} classes={{ popper: className }} />)(
+    ({ theme }) => ({
+      "& .MuiTooltip-tooltip": {
+        fontSize: "1rem",
+        padding: "10px 15px",
+        maxWidth: "none", // 툴팁의 최대 너비 제한을 해제
+        border: `1px solid ${theme.palette.divider}`,
+        backgroundColor: theme.palette.background.paper,
+        color: theme.palette.text.primary,
+      },
+    })
+  );
+
+  const formatCondition = (condition: ReportCondtion): React.ReactNode => {
     if (condition.type === "single") {
       const simpleCondition = convertSimpleCondition(condition);
-      return `
-      <strong>조건</strong> -  
-      순자산: <span class="condition-value">${formatNumber(simpleCondition.netWorth, "0,0")}만원</span>, 
-      저축금액: <span class="condition-value">${formatNumber(simpleCondition.annualSavings, "0,0")}만원</span>, 
-      저축 증가율: <span class="condition-value">${simpleCondition.savingsGrowthRate}%</span>, 
-      은퇴 시기: <span class="condition-value">${simpleCondition.expectedRetirementAge}년후</span>, 
-      은퇴후 월 순지출: <span class="condition-value">${formatNumber(simpleCondition.spend, "0,0")}만원</span>,
-      목표 수익률: <span class="condition-value">${simpleCondition.targetReturnRate}%</span>, 
-      물가 상승률: <span class="condition-value">${simpleCondition.annualInflationRate}%</span>
-    `;
+      const conditionText = `
+      순자산: ${formatNumber(simpleCondition.netWorth, "0,0")}만원
+      저축금액: ${formatNumber(simpleCondition.annualSavings, "0,0")}만원
+      저축 증가율: ${simpleCondition.savingsGrowthRate}%
+      은퇴 시기: ${simpleCondition.expectedRetirementAge}년후
+      은퇴후 월 순지출: ${formatNumber(simpleCondition.spend, "0,0")}만원
+      목표 수익률: ${simpleCondition.targetReturnRate}%
+      물가 상승률: ${simpleCondition.annualInflationRate}%
+          `
+        .trim()
+        .replace(/^ +/gm, "");
+
+      return (
+        <LargeTooltip title={<pre style={{ margin: 0, whiteSpace: "pre-wrap", fontFamily: "inherit" }}>{conditionText}</pre>} arrow>
+          <Button variant="outlined" size="small">
+            조건 보기
+          </Button>
+        </LargeTooltip>
+      );
     } else {
-      return `<strong>다중 조건</strong>`;
+      return (
+        <Button variant="outlined" size="small" onClick={handleOpenMultiConditionModal}>
+          다중 조건
+        </Button>
+      );
     }
   };
 
@@ -222,7 +271,7 @@ function Report({ condition }: ReportProps) {
     <div className="table-container">
       {condition && (
         <Typography variant="body1" sx={{ margin: "8px 0" }}>
-          <span dangerouslySetInnerHTML={{ __html: formatCondition(condition) }} />
+          {formatCondition(condition)}
           <Button onClick={openChartModal} startIcon={<InsertChartIcon />}>
             차트보기
           </Button>
@@ -231,7 +280,6 @@ function Report({ condition }: ReportProps) {
           </Button>
         </Typography>
       )}
-
       <TableContainer component={Paper}>
         <Table
           ref={tableRef}
@@ -295,6 +343,15 @@ function Report({ condition }: ReportProps) {
         </Table>
       </TableContainer>
       <AssetChartModal data={retirementCalculatorYearList} open={isOpenChart} onClose={handleCloseChart} />
+      <MultiConditionModal
+        open={isOpenMultiConditionModal}
+        onClose={handleCloseMultiConditionModal}
+        onSubmit={(newCondition) => {
+          onApplyMultiCondition(newCondition);
+          handleCloseMultiConditionModal();
+        }}
+        initialCondition={condition}
+      />
     </div>
   );
 }

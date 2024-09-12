@@ -113,14 +113,19 @@ function App() {
             다중 조건
           </Button>
           <HowToUseModal open={openHowToUse} onClose={handleCloseHowToUse} onApplyCondition={applyCondition} />
-          <MultiConditionModal open={openMultiCondition} onClose={handleCloseMultiCondition} onSubmit={applyMultiCondition} />
+          <MultiConditionModal
+            open={openMultiCondition}
+            onClose={handleCloseMultiCondition}
+            onSubmit={applyMultiCondition}
+            initialCondition={null}
+          />
         </Toolbar>
       </AppBar>
-      <Box sx={{ mt: "55px", display: "flex", flexDirection: "column" }}>
+      <Box sx={{ mt: "55px", mb: "25px", display: "flex", flexDirection: "column" }}>
         <Container maxWidth={false} sx={{ flex: "0 0 auto" }}>
           <ConditionForm ref={conditionFormRef} onSubmit={conditionSubmit} />
         </Container>
-        <ReportTabPanel ref={reportTabRef} onApplyCondition={applyCondition} />
+        <ReportTabPanel ref={reportTabRef} onApplyCondition={applyCondition} onApplyMultiCondition={applyMultiCondition} />
       </Box>
     </ThemeProvider>
   );
