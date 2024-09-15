@@ -30,7 +30,7 @@ export type SimpleCondtion = {
   targetReturnRate: number; // 목표 수익률
   annualInflationRate: number; // 연평균 물가상승률
   expectedRetirementAge: number; // 예상 은퇴시기
-  spend: number; // 은퇴후 순지출(현재가치)
+  spend: number; // 은퇴후 월 순지출
 };
 
 type ConditionFormProps = {
@@ -125,7 +125,7 @@ const ConditionForm = forwardRef<ConditionFormHandle, ConditionFormProps>((props
       valid = false;
     }
     if (!condition.spend) {
-      newErrors.spend = "은퇴후 순지출을 입력하세요.";
+      newErrors.spend = "은퇴후 월 순지출을 입력하세요.";
       valid = false;
     }
     if (!condition.targetReturnRate) {
@@ -252,7 +252,7 @@ const ConditionForm = forwardRef<ConditionFormHandle, ConditionFormProps>((props
         <FormHelperText>{errors.expectedRetirementAge}</FormHelperText>
       </FormControl>
       <TextField
-        label="은퇴후 순지출(현재가치)"
+        label="은퇴후 월 순지출"
         type="text"
         sx={{ m: 1, flex: 1.3, width: "25ch", input: { textAlign: "right" } }}
         value={condition.spend}

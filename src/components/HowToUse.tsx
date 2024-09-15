@@ -42,7 +42,7 @@ const HowToUse: React.FC<HowToUseProps> = ({ onApplyCondition }) => {
           { primary: "은퇴전 한해 저축금액", secondary: "한해 동안 저축가능한 금액" },
           { primary: "저축 증가률", secondary: "은퇴 전까지 해마다 늘어가는 저축 증가률" },
           { primary: "예상(희망) 은퇴 시기", secondary: "언제 은퇴하게 될것인지" },
-          { primary: "은퇴후 순지출(현재가치)", secondary: "은퇴후 '지출 - 소득' 금액 현재가치로 작성" },
+          { primary: "은퇴후 월 순지출", secondary: "은퇴후 '지출 - 소득' 금액 현재가치로 작성" },
           { primary: "목표 수익률", secondary: "순자산를 기준으로한 목표 투자수익률(투자 금액 대비 수익률 아님)" },
           { primary: "연평균 물가 상승률", secondary: "예상하는 연평균 물가 상승률" },
         ].map((item, index) => (
