@@ -44,7 +44,7 @@ export function convertSimpleCondition(parsedCondition: ReportCondtion) {
     targetReturnRate: parsedCondition.step[0].targetReturnRate,
     annualInflationRate: parsedCondition.step[0].annualInflationRate,
     expectedRetirementAge: expectedRetirementAge,
-    spend: parsedCondition.step[0].spend,
+    spend: parsedCondition.step[1].spend,
   };
   return simpleCondition;
 }
